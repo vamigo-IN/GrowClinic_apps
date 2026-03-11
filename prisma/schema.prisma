@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String?  @unique
+  password  String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  source    String?
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  content       String   // Markdown or HTML content
+  excerpt       String?
+  featuredImage String?
+  published     Boolean  @default(false)
+  authorId      String
+  author        User     @relation(fields: [authorId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tags          Tag[]
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  slug  String @unique
+  posts Post[]
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  source    String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model ConsultationBooking {
+  id            String   @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  clinicName    String
+  clinicType    String
+  challenge     String   @db.Text
+  preferredDate String?
+  preferredTime String?
+  createdAt     DateTime @default(now())
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  detail      String   @db.Text
+  growth      String   // e.g. "From 20 to 150 patients"
+  logoUrl     String?  // Clinic Logo
+  doctorName  String
+  website     String?  // Optional website link
+  specialty   String?  // e.g. "Dental", "Dermatology"
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ClinicAudit {
+  id             String   @id @default(cuid())
+  fullName       String
+  clinicName     String
+  specialization String
+  city           String
+  phone          String
+  status         String   @default("pending") // pending, completed, contact_made
+  seoScore       Int?
+  competitorRank Int?
+  estimatedLeads Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String?
+  company   String?
+  content   String   @db.Text
+  avatarUrl String?
+  rating    Int      @default(5)
+  featured  Boolean  @default(false)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
