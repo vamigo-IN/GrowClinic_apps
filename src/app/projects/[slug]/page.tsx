@@ -1,7 +1,6 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Metadata } from "next";
@@ -30,8 +29,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: Promise
 
     return (
         <main className="min-h-screen bg-white">
-            <Navbar />
-            
+
             {/* Hero Header */}
             <section className="pt-32 pb-20 bg-mesh-gradient border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,7 +39,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: Promise
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                                 Back to Success Stories
                             </Link>
-                            
+
                             <div className="space-y-4">
                                 <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight leading-none">
                                     {project.title}
@@ -93,7 +91,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: Promise
                     <div className="prose prose-lg prose-blue max-w-none">
                         <div dangerouslySetInnerHTML={{ __html: project.detail.replace(/\n/g, '<br/>') }} className="text-gray-700 font-medium leading-relaxed whitespace-pre-wrap" />
                     </div>
-                    
+
                     <div className="mt-20 p-12 rounded-[2.5rem] bg-gray-900 text-white relative overflow-hidden shadow-2xl">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-3xl rounded-full -mr-32 -mt-32"></div>
                         <div className="relative space-y-6">
@@ -114,7 +112,7 @@ export default async function ProjectCaseStudyPage({ params }: { params: Promise
                 </div>
             </section>
 
-            <Footer />
+
         </main>
     );
 }

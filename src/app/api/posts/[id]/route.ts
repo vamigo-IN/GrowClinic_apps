@@ -34,7 +34,7 @@ export async function PUT(req: Request, { params }: Params) {
     }
 
     const { id } = await params;
-    const { title, slug, content, excerpt, featuredImage, published, tags } = await req.json();
+    const { title, slug, content, excerpt, featuredImage, category, published, tags } = await req.json();
 
     if (!title || !slug || !content) {
       return NextResponse.json({ error: "Title, slug, and content are required" }, { status: 400 });
@@ -57,6 +57,7 @@ export async function PUT(req: Request, { params }: Params) {
         content,
         excerpt,
         featuredImage,
+        category,
         published: published ?? false,
         tags: {
           set: [], // disconnect all

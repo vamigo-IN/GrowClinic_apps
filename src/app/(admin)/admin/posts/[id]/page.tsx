@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 // Assuming we use this for both new and edit paths
 export default function PostEditor() {
@@ -20,6 +21,7 @@ export default function PostEditor() {
     excerpt: "",
     content: "",
     featuredImage: "",
+    category: "Healthcare Trends",
     published: false,
     tags: "" // Comma separated for simple input
   });
@@ -38,6 +40,7 @@ export default function PostEditor() {
                     excerpt: data.excerpt || "",
                     content: data.content,
                     featuredImage: data.featuredImage || "",
+                    category: data.category || "Healthcare Trends",
                     published: data.published,
                     tags: data.tags?.map((t: any) => t.name).join(", ") || ""
                 });
@@ -124,17 +127,13 @@ export default function PostEditor() {
                 />
               </div>
 
-              {/* Content (Simplified to textarea for now, could be Markdown/WYSWIYG editor) */}
+              {/* Content (Rich Text Editor) */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Content (Markdown supported)</label>
-                <textarea
-                  required
-                  rows={15}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary font-mono text-sm"
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Write your article content here..."
-                ></textarea>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Content</label>
+                <RichTextEditor 
+                  content={formData.content}
+                  onChange={(html) => setFormData({ ...formData, content: html })}
+                />
               </div>
               
               {/* Excerpt */}
@@ -155,6 +154,25 @@ export default function PostEditor() {
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                 <h3 className="font-semibold text-gray-900 mb-4 border-b pb-2">Settings</h3>
                 
+                <div className="mb-4">
+                  <label className="block text-sm text-gray-700 font-medium mb-1">Category</label>
+                  <input
+                    type="text"
+                    list="category-suggestions"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    placeholder="Enter or select category"
+                  />
+                  <datalist id="category-suggestions">
+                    <option value="Healthcare Trends" />
+                    <option value="Patient Acquisition" />
+                    <option value="Clinic Management" />
+                    <option value="Digital Marketing" />
+                    <option value="Case Studies" />
+                  </datalist>
+                </div>
+
                 <div className="mb-4">
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input 

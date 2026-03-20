@@ -35,6 +35,7 @@ model Post {
   content       String   // Markdown or HTML content
   excerpt       String?
   featuredImage String?
+  category      String?
   published     Boolean  @default(false)
   authorId      String
   author        User     @relation(fields: [authorId], references: [id])

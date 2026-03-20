@@ -27,7 +27,8 @@ export default async function AdminPosts() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider text-left">
               <tr>
-                <th className="px-6 py-4 w-1/2">Title</th>
+                <th className="px-6 py-4 w-1/3">Title</th>
+                <th className="px-6 py-4">Category</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Tags</th>
                 <th className="px-6 py-4">Date</th>
@@ -40,6 +41,11 @@ export default async function AdminPosts() {
                   <td className="px-6 py-4">
                     <p className="font-semibold text-gray-900">{post.title}</p>
                     <p className="text-xs text-gray-500 truncate max-w-sm">/{post.slug}</p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-semibold">
+                      {post.category || "Uncategorized"}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {post.published ? (

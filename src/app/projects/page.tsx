@@ -1,13 +1,12 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Medical Case Studies & Success Stories",
-  description: "See how we've helped clinics scale their patient acquisition and digital presence through data-backed growth systems.",
+    title: "Medical Case Studies & Success Stories",
+    description: "See how we've helped clinics scale their patient acquisition and digital presence through data-backed growth systems.",
 };
 
 export default async function ProjectsPage() {
@@ -18,7 +17,7 @@ export default async function ProjectsPage() {
 
     return (
         <main className="min-h-screen pt-24 pb-20 bg-mesh-gradient">
-            <Navbar />
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16 space-y-4">
                     <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
@@ -31,8 +30,8 @@ export default async function ProjectsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {projects.map((project) => (
-                        <Link 
-                            key={project.id} 
+                        <Link
+                            key={project.id}
                             href={`/projects/${project.slug}`}
                             className="group bg-white rounded-3xl shadow-sm border border-black/5 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
                         >
@@ -65,7 +64,7 @@ export default async function ProjectsPage() {
                                         </span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
                                     View Full Case Study
                                     <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +84,7 @@ export default async function ProjectsPage() {
                     )}
                 </div>
             </div>
-            <Footer />
+
         </main>
     );
 }
