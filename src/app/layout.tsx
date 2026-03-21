@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   keywords: ["healthcare marketing", "clinic growth", "patient acquisition", "medical digital marketing", "healthcare automation"],
   authors: [{ name: "GrowClinic Team" }],
   creator: "GrowClinic",
-  publisher: "GrowClinic Pvt Ltd",
+  publisher: "GrowClinic (OPC) Pvt Ltd",
   formatDetection: {
     email: false,
     address: false,
@@ -68,8 +68,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${poppins.variable} font-sans antialiased text-foreground bg-background pt-20`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${poppins.variable} font-sans antialiased text-foreground bg-background pt-20`} suppressHydrationWarning>
         <Navbar />
         <main className="min-h-screen">
           {children}

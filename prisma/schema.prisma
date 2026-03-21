@@ -32,7 +32,7 @@ model Post {
   id            String   @id @default(cuid())
   title         String
   slug          String   @unique
-  content       String   // Markdown or HTML content
+  content       String   @db.LongText // HTML content from TipTap editor
   excerpt       String?
   featuredImage String?
   category      String?

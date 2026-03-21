@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Calendar, User, Tag } from "lucide-react";
+import { ArrowRight, Calendar, User, Clock, Sparkles } from "lucide-react";
 
 export const metadata = {
   title: "Blog & Healthcare Insights",
@@ -18,20 +18,119 @@ export default async function BlogPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  return (
-    <main className="pt-32 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeading 
-          title="Insights &" 
-          highlight="Intelligence" 
-          subtitle="The latest strategies in medical growth and clinic engineering."
-          level="h1"
-        />
+  const featuredPost = posts[0];
+  const remainingPosts = posts.slice(1);
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-16">
-          {posts.map((post) => (
-            <article key={post.id} className="group bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-3xl hover:-translate-y-2 transition-all duration-500">
-              <Link href={`/blog/${post.slug}`} className="block relative h-64 overflow-hidden">
+  // Extract unique categories
+  const categories = [...new Set(posts.map(p => p.category).filter(Boolean))] as string[];
+
+  return (
+    <main className="pt-28 pb-20 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute top-[400px] left-0 w-[500px] h-[500px] bg-primary/3 rounded-full blur-3xl -z-10" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-8">
+            <Sparkles className="w-3.5 h-3.5" />
+            Knowledge Hub
+          </div>
+          <SectionHeading
+            title="Insights &"
+            highlight="Intelligence"
+            subtitle="The latest strategies in medical growth and clinic engineering."
+            level="h1"
+          />
+        </div>
+
+        {/* Category Filter Pills */}
+        {categories.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-16">
+            <span className="px-5 py-2.5 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest cursor-pointer shadow-md shadow-primary/20">
+              All Articles
+            </span>
+            {categories.map((cat) => (
+              <span key={cat} className="px-5 py-2.5 rounded-full bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest cursor-pointer border border-slate-100 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all">
+                {cat}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Featured Post (Hero Card) */}
+        {featuredPost && (
+          <div className="mb-20">
+            <Link href={`/blog/${featuredPost.slug}`} className="group block">
+              <div className="relative bg-white rounded-[3rem] border border-slate-100 overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-1">
+                <div className="grid md:grid-cols-2 gap-0">
+                  {/* Image Side */}
+                  <div className="relative h-72 md:h-[500px] overflow-hidden">
+                    <Image
+                      src={featuredPost.featuredImage || "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&q=80"}
+                      alt={featuredPost.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/30 md:block hidden" />
+                    <div className="absolute top-6 left-6">
+                      <span className="px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[10px] font-black uppercase tracking-widest shadow-sm">
+                        Featured
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Content Side */}
+                  <div className="p-10 md:p-14 flex flex-col justify-center">
+                    <div className="flex items-center gap-3 mb-6">
+                      <span className="px-3 py-1.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">
+                        {featuredPost.category || 'Insights'}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <Clock className="w-3 h-3" />
+                        {Math.ceil(featuredPost.content.replace(/<[^>]*>?/gm, '').split(' ').length / 200)} min
+                      </span>
+                    </div>
+
+                    <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 leading-tight tracking-tight group-hover:text-primary transition-colors">
+                      {featuredPost.title}
+                    </h2>
+
+                    <p className="text-slate-500 font-medium leading-relaxed mb-8 text-lg line-clamp-3">
+                      {featuredPost.excerpt || featuredPost.content.replace(/<[^>]*>?/gm, '').substring(0, 200) + "..."}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary-dark flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                          {(featuredPost.author?.name || "GC")[0]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{featuredPost.author?.name || "GrowClinic Expert"}</p>
+                          <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1" suppressHydrationWarning>
+                            <Calendar className="w-3 h-3" />
+                            {new Date(featuredPost.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
+                        <ArrowRight className="w-5 h-5" />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        )}
+
+        {/* Article Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {remainingPosts.map((post) => (
+            <article key={post.id} className="group bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+              <Link href={`/blog/${post.slug}`} className="block relative h-56 overflow-hidden">
                 <Image
                   src={post.featuredImage || "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&q=80"}
                   alt={post.title}
@@ -43,34 +142,42 @@ export default async function BlogPage() {
                     Read Article <ArrowRight className="w-4 h-4" />
                   </span>
                 </div>
+                {/* Category Badge */}
+                <div className="absolute top-4 left-4">
+                  <span className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black uppercase tracking-widest shadow-sm">
+                    {post.category || 'Insights'}
+                  </span>
+                </div>
               </Link>
 
-              <div className="p-10">
-                <div className="flex items-center gap-4 mb-6">
-                  {post.tags?.[0] && (
-                    <span className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">
-                      {post.tags[0].name}
-                    </span>
-                  )}
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                     <Calendar className="w-3 h-3" />
-                    {new Date(post.createdAt).toLocaleDateString()}
+                    <span suppressHydrationWarning>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  </span>
+                  <span className="text-slate-200">•</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Clock className="w-3 h-3" />
+                    {Math.ceil(post.content.replace(/<[^>]*>?/gm, '').split(' ').length / 200)} min
                   </span>
                 </div>
 
                 <Link href={`/blog/${post.slug}`}>
-                  <h2 className="text-2xl font-black text-slate-900 mb-4 leading-tight tracking-tight group-hover:text-primary transition-colors">
+                  <h2 className="text-xl font-black text-slate-900 mb-4 leading-tight tracking-tight group-hover:text-primary transition-colors line-clamp-2">
                     {post.title}
                   </h2>
                 </Link>
 
-                <p className="text-slate-500 font-medium leading-relaxed mb-8 line-clamp-3">
-                  {post.excerpt || post.content.substring(0, 150).replace(/[#*]/g, '') + "..."}
+                <p className="text-slate-500 font-medium leading-relaxed mb-6 line-clamp-3 text-sm">
+                  {post.excerpt || post.content.replace(/<[^>]*>?/gm, '').substring(0, 150).replace(/[#*]/g, '') + "..."}
                 </p>
 
-                <div className="flex items-center justify-between pt-8 border-t border-slate-50">
+                <div className="flex items-center justify-between pt-6 border-t border-slate-50">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    <User className="w-4 h-4 text-primary" />
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-primary/20 to-primary/10 flex items-center justify-center text-primary text-[10px] font-black">
+                      {(post.author?.name || "GC")[0]}
+                    </div>
                     {post.author?.name || "GrowClinic Expert"}
                   </div>
                   <Link href={`/blog/${post.slug}`} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300">
@@ -83,8 +190,12 @@ export default async function BlogPage() {
         </div>
 
         {posts.length === 0 && (
-          <div className="text-center py-20 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200">
-            <h3 className="text-xl font-bold text-slate-400">No insights published yet.</h3>
+          <div className="text-center py-24 bg-gradient-to-br from-slate-50 to-white rounded-[3rem] border border-dashed border-slate-200">
+            <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-6">
+              <Sparkles className="w-8 h-8 text-slate-300" />
+            </div>
+            <h3 className="text-xl font-black text-slate-400 mb-2">No insights published yet.</h3>
+            <p className="text-sm text-slate-400 font-medium">Check back soon — we are preparing valuable content for your growth journey.</p>
           </div>
         )}
       </div>

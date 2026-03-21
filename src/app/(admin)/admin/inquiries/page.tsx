@@ -16,8 +16,11 @@ interface Inquiry {
 export default function InquiriesDashboard() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
+  
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const fetchInquiries = async () => {
     setLoading(true);
@@ -25,6 +28,8 @@ export default function InquiriesDashboard() {
       const queryParams = new URLSearchParams();
       if (search) queryParams.append("search", search);
       if (sourceFilter) queryParams.append("source", sourceFilter);
+      if (startDate) queryParams.append("startDate", startDate);
+      if (endDate) queryParams.append("endDate", endDate);
 
       const res = await fetch(`/api/inquiries?${queryParams.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch inquiries");
@@ -40,7 +45,14 @@ export default function InquiriesDashboard() {
   useEffect(() => {
     fetchInquiries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, sourceFilter]);
+  }, [search, sourceFilter, startDate, endDate]);
+
+  const clearFilters = () => {
+    setSearch("");
+    setSourceFilter("");
+    setStartDate("");
+    setEndDate("");
+  };
 
   const handleDownloadCSV = () => {
     if (inquiries.length === 0) return;
@@ -67,11 +79,25 @@ export default function InquiriesDashboard() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `Inquiries_Export_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute("download", `Inquiries_Export_${startDate || 'All'}_to_${endDate || 'All'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+  const getMailtoUrl = (email: string, name: string) => {
+    const subject = encodeURIComponent("Re: Your inquiry with GrowClinic");
+    const body = encodeURIComponent(`Hi ${name},\n\nThank you for reaching out to GrowClinic. We received your inquiry and would love to help you.\n\nBest regards,\nThe GrowClinic Team`);
+    return `mailto:${email}?subject=${subject}&body=${body}`;
+  };
+
+  const getWhatsAppUrl = (phone: string, name: string) => {
+    const cleanPhone = phone.replace(/\D/g, "");
+    const text = encodeURIComponent(`Hi ${name}, this is the GrowClinic team. We received your inquiry and would love to assist you!`);
+    return `https://wa.me/${cleanPhone}?text=${text}`;
+  };
+
+  const hasActiveFilters = search !== "" || sourceFilter !== "" || startDate !== "" || endDate !== "";
 
   return (
     <div className="space-y-6">
@@ -82,11 +108,11 @@ export default function InquiriesDashboard() {
         </div>
         <Button onClick={handleDownloadCSV} disabled={inquiries.length === 0} variant="outline" className="flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          Export CSV
+          Export Filtered to CSV
         </Button>
       </div>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4">
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col xl:flex-row gap-4">
         <div className="flex-1 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,19 +127,44 @@ export default function InquiriesDashboard() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="w-full sm:w-48">
+        
+        <div className="flex flex-col sm:flex-row gap-4 xl:w-auto">
           <select
-            className="block w-full py-2 px-3 border border-gray-200 bg-white rounded-lg text-sm focus:ring-primary focus:border-primary transition-colors"
+            className="block w-full sm:w-40 py-2 px-3 border border-gray-200 bg-white rounded-lg text-sm focus:ring-primary focus:border-primary transition-colors"
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value)}
           >
             <option value="">All Sources</option>
             <option value="Google">Google Search</option>
             <option value="Social Media">Social Media</option>
-            <option value="Referral">Friend or Colleague</option>
+            <option value="Referral">Friend/Colleague</option>
             <option value="Advertisement">Advertisement</option>
             <option value="Other">Other</option>
           </select>
+
+          <div className="flex items-center gap-2">
+            <input 
+              type="date"
+              className="block w-full sm:w-36 py-2 px-3 border border-gray-200 bg-white rounded-lg text-sm focus:ring-primary focus:border-primary transition-colors text-gray-600"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              title="Start Date"
+            />
+            <span className="text-gray-400 text-sm font-medium">to</span>
+            <input 
+              type="date"
+              className="block w-full sm:w-36 py-2 px-3 border border-gray-200 bg-white rounded-lg text-sm focus:ring-primary focus:border-primary transition-colors text-gray-600"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              title="End Date"
+            />
+          </div>
+
+          {hasActiveFilters && (
+            <button onClick={clearFilters} className="text-sm font-bold text-gray-500 hover:text-red-500 transition-colors whitespace-nowrap flex items-center gap-1 px-2">
+               Clear
+            </button>
+          )}
         </div>
       </div>
 
@@ -144,7 +195,7 @@ export default function InquiriesDashboard() {
               ) : inquiries.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-500">
-                    No inquiries found matching your criteria.
+                    No inquiries found matching your filter criteria.
                   </td>
                 </tr>
               ) : (
@@ -152,9 +203,27 @@ export default function InquiriesDashboard() {
                   <tr key={inq.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-900">{inq.name}</span>
-                        <span className="text-sm text-gray-500">{inq.email}</span>
-                        {inq.phone && <span className="text-xs text-gray-400 mt-0.5">{inq.phone}</span>}
+                        <span className="text-sm font-bold text-gray-900 mb-1">{inq.name}</span>
+                        <a 
+                          href={getMailtoUrl(inq.email, inq.name)} 
+                          className="text-sm font-medium text-primary hover:text-primary-focus hover:underline flex items-center gap-1 group"
+                          title="Send Email"
+                        >
+                          <svg className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                          {inq.email}
+                        </a>
+                        {inq.phone && (
+                          <a 
+                            href={getWhatsAppUrl(inq.phone, inq.name)} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-xs font-bold text-green-600 hover:text-green-700 hover:underline mt-1 flex items-center gap-1 group"
+                            title="Message on WhatsApp"
+                          >
+                            <svg className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                            {inq.phone}
+                          </a>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

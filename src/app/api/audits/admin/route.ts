@@ -11,7 +11,6 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search");
-    const source = searchParams.get("source");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
@@ -19,15 +18,12 @@ export async function GET(req: Request) {
 
     if (search) {
       whereClause.OR = [
-        { name: { contains: search } },
-        { email: { contains: search } },
+        { clinicName: { contains: search } },
+        { fullName: { contains: search } },
+        { city: { contains: search } },
       ];
     }
-
-    if (source) {
-      whereClause.source = source;
-    }
-
+    
     if (startDate || endDate) {
       whereClause.createdAt = {};
       if (startDate) {
@@ -40,16 +36,16 @@ export async function GET(req: Request) {
       }
     }
 
-    const inquiries = await prisma.contactMessage.findMany({
+    const audits = await prisma.clinicAudit.findMany({
       where: whereClause,
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(inquiries);
+    return NextResponse.json(audits);
   } catch (error) {
-    console.error("Error fetching inquiries:", error);
+    console.error("Error fetching audits:", error);
     return NextResponse.json(
-      { error: "Failed to fetch inquiries" },
+      { error: "Failed to fetch audits" },
       { status: 500 }
     );
   }

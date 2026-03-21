@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
+import ImageResize from "tiptap-extension-resize-image";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import { 
@@ -107,7 +107,7 @@ const MenuBar = ({ editor, onToggleHtml, isHtmlMode }: { editor: any, onToggleHt
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 bg-gray-50/50 backdrop-blur-sm sticky top-0 z-10">
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 bg-gray-50/50 backdrop-blur-sm sticky top-0 z-10 w-full overflow-x-auto">
       <TooltipButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive("bold")}
@@ -181,6 +181,30 @@ const MenuBar = ({ editor, onToggleHtml, isHtmlMode }: { editor: any, onToggleHt
       <div className="w-px h-6 bg-gray-300 mx-1" />
       
       <TooltipButton
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        isActive={editor.isActive({ textAlign: 'left' })}
+        title="Align Left"
+      >
+        <Type size={18} />
+      </TooltipButton>
+      <TooltipButton
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        isActive={editor.isActive({ textAlign: 'center' })}
+        title="Align Center"
+      >
+        <Type size={18} />
+      </TooltipButton>
+      <TooltipButton
+        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+        isActive={editor.isActive({ textAlign: 'justify' })}
+        title="Justify"
+      >
+        <Type size={18} />
+      </TooltipButton>
+      
+      <div className="w-px h-6 bg-gray-300 mx-1 whitespace-nowrap" />
+
+      <TooltipButton
         onClick={() => fileInputRef.current?.click()}
         disabled={uploading}
         title="Upload Image"
@@ -246,13 +270,11 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
           class: "text-primary underline font-medium",
         },
       }),
-      Image.configure({
-        HTMLAttributes: {
-          class: "rounded-2xl border border-gray-100 shadow-sm max-w-full h-auto my-4",
-        },
+      ImageResize.configure({
+        inline: true,
       }),
       TextAlign.configure({
-        types: ["heading", "paragraph"],
+        types: ["heading", "paragraph", "image"],
       }),
     ],
     content,
@@ -262,7 +284,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     },
     editorProps: {
       attributes: {
-        class: "prose prose-slate prose-lg max-w-none p-4 focus:outline-none min-h-[400px]",
+        class: "prose prose-slate prose-lg max-w-none p-4 focus:outline-none min-h-[400px] prose-img:rounded-2xl prose-img:border prose-img:border-gray-100 prose-img:shadow-sm prose-img:cursor-pointer",
       },
     },
   });

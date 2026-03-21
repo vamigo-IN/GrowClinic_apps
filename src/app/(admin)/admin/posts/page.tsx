@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { deletePost } from "../actions";
 
 export default async function AdminPosts() {
   const session = await auth();
@@ -73,9 +75,12 @@ export default async function AdminPosts() {
                     {new Date(post.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link href={`/admin/posts/${post.id}`} className="text-primary hover:text-primary-light">
-                      Edit
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link href={`/admin/posts/${post.id}`} className="text-primary hover:text-primary-light transition-colors">
+                        Edit
+                      </Link>
+                      <DeleteButton id={post.id} onDelete={deletePost} itemName="post" />
+                    </div>
                   </td>
                 </tr>
               ))}

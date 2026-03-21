@@ -84,23 +84,40 @@ export function Footer() {
                             <span className="absolute -bottom-3 left-0 w-8 h-1 bg-primary rounded-full"></span>
                         </h4>
                         <ul className="space-y-6">
-                            <li className="flex items-center gap-4 group cursor-pointer">
-                                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-all group-hover:bg-primary group-hover:text-white">
-                                    <MapPin className="w-5 h-5" />
-                                </div>
-                                <span className="text-slate-900 font-black tracking-tight">Noida, Uttar Pradesh, India</span>
+                            <li>
+                                <a 
+                                    href="https://maps.google.com/?q=GrowClinic+Noida" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-4 group cursor-pointer"
+                                >
+                                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-all group-hover:bg-primary group-hover:text-white">
+                                        <MapPin className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-slate-900 font-black tracking-tight">Noida, Uttar Pradesh, India</span>
+                                </a>
                             </li>
-                            <li className="flex items-center gap-4 group cursor-pointer">
-                                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-all group-hover:bg-primary group-hover:text-white">
-                                    <Phone className="w-5 h-5" />
-                                </div>
-                                <span className="text-slate-900 font-black tracking-tight">+91 97183 04212</span>
+                            <li>
+                                <a 
+                                    href="tel:+919718304212" 
+                                    className="flex items-center gap-4 group cursor-pointer"
+                                >
+                                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-all group-hover:bg-primary group-hover:text-white">
+                                        <Phone className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-slate-900 font-black tracking-tight">+91 97183 04212</span>
+                                </a>
                             </li>
-                            <li className="flex items-center gap-4 group cursor-pointer">
-                                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-all group-hover:bg-primary group-hover:text-white">
-                                    <Mail className="w-5 h-5" />
-                                </div>
-                                <span className="text-slate-900 font-black tracking-tight">hi@growclinic.io</span>
+                            <li>
+                                <a 
+                                    href="mailto:hi@growclinic.io" 
+                                    className="flex items-center gap-4 group cursor-pointer"
+                                >
+                                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-all group-hover:bg-primary group-hover:text-white">
+                                        <Mail className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-slate-900 font-black tracking-tight">hi@growclinic.io</span>
+                                </a>
                             </li>
                         </ul>
 
@@ -125,7 +142,7 @@ export function Footer() {
                 <div className="border-t border-slate-100 pt-10 flex flex-col md:flex-row justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     <p>Copyright © {currentYear} GrowClinic Pvt. Ltd. | All Rights Reserved</p>
                     <div className="flex gap-8 mt-6 md:mt-0">
-                        <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Charter</Link>
+                        <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
                         <Link href="/terms" className="hover:text-primary transition-colors">Term of Service</Link>
                     </div>
                 </div>

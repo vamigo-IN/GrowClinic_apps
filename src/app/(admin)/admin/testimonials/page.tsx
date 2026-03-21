@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { deleteTestimonial } from "../actions";
 
 export default async function AdminTestimonials() {
   const session = await auth();
@@ -84,9 +86,12 @@ export default async function AdminTestimonials() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link href={`/admin/testimonials/${testimonial.id}`} className="text-primary hover:text-primary-dark">
-                      Edit
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link href={`/admin/testimonials/${testimonial.id}`} className="text-primary hover:text-primary-dark transition-colors">
+                        Edit
+                      </Link>
+                      <DeleteButton id={testimonial.id} onDelete={deleteTestimonial} itemName="testimonial" />
+                    </div>
                   </td>
                 </tr>
               ))}

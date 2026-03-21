@@ -3,6 +3,7 @@ import { ProblemSync } from "./components/ProblemSync";
 import { FeaturesSync } from "./components/FeaturesSync";
 import { StepsSync } from "./components/StepsSync";
 import { CTASync } from "./components/CTASync";
+import { WhatsAppCTA } from "@/components/ui/WhatsAppCTA";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function SyncPage() {
       <FeaturesSync />
       <StepsSync />
       <CTASync />
+      <WhatsAppCTA />
     </main>
   );
 }

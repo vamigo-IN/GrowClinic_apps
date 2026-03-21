@@ -84,14 +84,24 @@ export function CTASync() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                            <Button variant="primary" className="w-full sm:w-auto text-xl px-12 py-6 rounded-[2.5rem] shadow-glow flex items-center justify-center gap-3 transition-transform hover:scale-105 active:scale-95">
+                            <Button 
+                                variant="primary" 
+                                className="w-full sm:w-auto text-xl px-12 py-6 rounded-[2.5rem] shadow-glow flex items-center justify-center gap-3 transition-transform hover:scale-105 active:scale-95"
+                                href="https://sync.growclinic.io/"
+                                target="_blank"
+                            >
                                 Start Your Demo
                                 <ArrowRight className="w-6 h-6" />
                             </Button>
-                            <button className="flex items-center gap-3 text-white font-black uppercase text-xs tracking-[0.2em] group px-8 py-6 rounded-[2.5rem] border border-white/10 hover:bg-white/5 transition-all">
+                            <Button 
+                                variant="outline" 
+                                className="flex items-center gap-3 text-white font-black uppercase text-xs tracking-[0.2em] group px-8 py-6 rounded-[2.5rem] border border-white/10 hover:bg-white/5 transition-all"
+                                href="https://wa.me/919876543210"
+                                target="_blank"
+                            >
                                 <MessageSquare className="w-5 h-5 text-accent" />
                                 Chat with Support
-                            </button>
+                            </Button>
                         </div>
                         
                         <div className="mt-12 flex items-center justify-center gap-8 text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">

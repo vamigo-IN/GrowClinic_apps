@@ -54,7 +54,12 @@ export function HeroSync() {
                         transition={{ duration: 0.8, delay: 0.3 }}
                         className="flex flex-col sm:flex-row gap-6 justify-center items-center w-full sm:w-auto"
                     >
-                        <Button variant="primary" className="w-full sm:w-auto text-lg px-12 py-5 rounded-[2rem] shadow-glow flex items-center justify-center gap-3 group">
+                        <Button 
+                            variant="primary" 
+                            className="w-full sm:w-auto text-lg px-12 py-5 rounded-[2rem] shadow-glow flex items-center justify-center gap-3 group"
+                            href="https://sync.growclinic.io/"
+                            target="_blank"
+                        >
                             Start Your Free Demo
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Button>
