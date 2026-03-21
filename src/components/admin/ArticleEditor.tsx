@@ -8,6 +8,7 @@ import LinkExtension from "@tiptap/extension-link"
 import ImageResize from "tiptap-extension-resize-image"
 import Underline from "@tiptap/extension-underline"
 import TextAlign from "@tiptap/extension-text-align"
+import Image from "@tiptap/extension-image"
 
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -83,6 +84,7 @@ export function ArticleEditor({ initialData, onSave, saving }: ArticleEditorProp
       ImageResize.configure({
         inline: false,
       }),
+      Image,
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
