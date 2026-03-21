@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { auth } from "@/lib/auth";
 
@@ -23,7 +23,12 @@ export async function POST(req: Request) {
     // Create unique filename
     const extension = file.name.split(".").pop();
     const fileName = `${crypto.randomUUID()}.${extension}`;
-    const path = join(process.cwd(), "public", "uploads", fileName);
+    
+    // Support configurable upload directory for Hostinger persistence
+    const uploadDir = process.env.UPLOAD_DIR || join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
+    
+    const path = join(uploadDir, fileName);
 
     await writeFile(path, buffer);
     const url = `/api/uploads/${fileName}`;

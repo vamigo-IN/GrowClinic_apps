@@ -11,8 +11,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return new NextResponse("Filename snippet missing", { status: 400 });
     }
 
-    // Attempt to locate file heavily anchored in Next.js public directory
-    const filePath = join(process.cwd(), "public", "uploads", filename);
+    // Look up file in the configured upload directory (supports external path via UPLOAD_DIR)
+    const uploadDir = process.env.UPLOAD_DIR || join(process.cwd(), "public", "uploads");
+    const filePath = join(uploadDir, filename);
 
     if (!existsSync(filePath)) {
       return new NextResponse("Requested asset not found in backend storage", { status: 404 });

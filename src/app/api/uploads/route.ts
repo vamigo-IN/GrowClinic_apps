@@ -12,7 +12,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const uploadsDir = join(process.cwd(), "public", "uploads");
+    const uploadsDir = process.env.UPLOAD_DIR || join(process.cwd(), "public", "uploads");
 
     if (!existsSync(uploadsDir)) {
       return NextResponse.json([]);
