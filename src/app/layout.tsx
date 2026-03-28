@@ -4,6 +4,8 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
+import { prisma } from "@/lib/prisma";
+
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
@@ -11,6 +13,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  // ... existing metadata ...
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: {
     default: "GrowClinic | India's Elite Healthcare Growth Agency",
@@ -62,19 +65,60 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await prisma.siteSettings.findUnique({
+    where: { id: "global" }
+  });
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "GrowClinic",
+    "url": "https://growclinic.io",
+    "logo": "https://growclinic.io/favicon.ico",
+    "description": "India's elite healthcare growth agency specialized in patient acquisition and clinic engineering.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Noida",
+      "addressRegion": "Uttar Pradesh",
+      "addressCountry": "IN"
+    },
+    "sameAs": [
+      "https://www.linkedin.com/showcase/growclinic-io",
+      "https://www.instagram.com/growclinic.io"
+    ]
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {settings?.headerScripts && (
+          <script
+            id="admin-header-scripts"
+            dangerouslySetInnerHTML={{ __html: settings.headerScripts }}
+          />
+        )}
+      </head>
       <body className={`${poppins.variable} font-sans antialiased text-foreground bg-background pt-20`} suppressHydrationWarning>
         <Navbar />
         <main className="min-h-screen">
           {children}
         </main>
         <Footer />
+        {settings?.footerScripts && (
+          <script
+            id="admin-footer-scripts"
+            dangerouslySetInnerHTML={{ __html: settings.footerScripts }}
+          />
+        )}
       </body>
     </html>
   );

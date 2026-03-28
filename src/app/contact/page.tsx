@@ -2,11 +2,32 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Mail, Phone, MapPin, Instagram, Linkedin, Send, CheckCircle2, AlertCircle, ChevronDown } from "lucide-react";
+import Link from "next/link";
+
+const COUNTRY_CODES = [
+    { code: "+91", country: "India", flag: "🇮🇳" },
+    { code: "+1", country: "USA", flag: "🇺🇸" },
+    { code: "+44", country: "UK", flag: "🇬🇧" },
+    { code: "+971", country: "UAE", flag: "🇦🇪" },
+    { code: "+65", country: "Singapore", flag: "🇸🇬" },
+    { code: "+61", country: "Australia", flag: "🇦🇺" },
+    { code: "+966", country: "Saudi Arabia", flag: "🇸🇦" },
+    { code: "+974", country: "Qatar", flag: "🇶🇦" },
+    { code: "+968", country: "Oman", flag: "🇴🇲" },
+    { code: "+977", country: "Nepal", flag: "🇳🇵" },
+    { code: "+880", country: "Bangladesh", flag: "🇧🇩" },
+    { code: "+94", country: "Sri Lanka", flag: "🇱🇰" },
+    { code: "+60", country: "Malaysia", flag: "🇲🇾" },
+    { code: "+49", country: "Germany", flag: "🇩🇪" },
+    { code: "+33", country: "France", flag: "🇫🇷" },
+];
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    countryCode: "+91",
     phone: "",
     source: "",
     message: "",
@@ -28,7 +49,10 @@ export default function ContactPage() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          phone: formData.phone ? formData.countryCode + formData.phone : "",
+        }),
       });
 
       const data = await res.json();
@@ -38,7 +62,7 @@ export default function ContactPage() {
       }
 
       setStatus("success");
-      setFormData({ name: "", email: "", phone: "", source: "", message: "" });
+      setFormData({ name: "", email: "", countryCode: "+91", phone: "", source: "", message: "" });
     } catch (error: any) {
       setStatus("error");
       setErrorMessage(error.message);
@@ -46,91 +70,125 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pt-24 pb-16">
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-mesh-gradient flex flex-col pt-32 pb-24 relative overflow-hidden">
+      {/* Background flair */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none -mr-64 -mt-32 opacity-60"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px] pointer-events-none -ml-48 -mb-32 opacity-40"></div>
+
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
-            Get in Touch
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight mb-6">
+            Let's Engineer Your <span className="text-gradient-primary">Growth</span>
           </h1>
-          <p className="mt-4 text-xl text-gray-500 max-w-2xl mx-auto">
-            Have questions about our marketing or Whatsapp automation tool? We'd love to hear from you.
+          <p className="text-xl text-slate-600 font-medium leading-relaxed">
+            Ready to scale your medical practice? Fill out the form below or reach out directly to our headquarters.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2">
-            {/* Contact Info Sidebar */}
-            <div className="bg-primary p-10 text-white flex flex-col justify-between">
-              <div>
-                <h3 className="text-2xl font-bold mb-6">Contact Information</h3>
-                <p className="text-primary-light mb-8 opacity-90">
-                  Fill up the form and our team will get back to you within 24 hours.
-                </p>
-                
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span className="font-medium">hello@growclinic.io</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Contact Info Sidebar */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="glass-morphism p-8 rounded-[2.5rem] border border-white/40 shadow-xl">
+              <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                Mission Control
+                <span className="w-8 h-1 bg-primary rounded-full"></span>
+              </h3>
+              
+              <div className="space-y-8">
+                <a href="mailto:hi@growclinic.io" className="flex items-center gap-5 group">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                    <Mail className="w-6 h-6" />
                   </div>
-                  <div className="flex items-center gap-4">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    <span className="font-medium">+1 (555) 123-4567</span>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Email Us</p>
+                    <p className="text-slate-900 font-black text-lg">hi@growclinic.io</p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span className="font-medium">123 Growth Ave, NY 10012</span>
+                </a>
+
+                <a href="tel:+919718304212" className="flex items-center gap-5 group">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                    <Phone className="w-6 h-6" />
                   </div>
-                </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Call Us</p>
+                    <p className="text-slate-900 font-black text-lg">+91 97183 04212</p>
+                  </div>
+                </a>
+
+                <a 
+                  href="https://maps.google.com/?q=GrowClinic+Noida" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-5 group"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Visit Us</p>
+                    <p className="text-slate-900 font-black text-lg leading-tight">Noida, Uttar Pradesh, India</p>
+                  </div>
+                </a>
               </div>
 
-              {/* Decorative elements */}
-              <div className="mt-12 relative h-32 w-full overflow-hidden rounded-xl opacity-20">
-                <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-white bg-opacity-30 blur-2xl"></div>
-                <div className="absolute -left-10 -top-10 w-32 h-32 rounded-full bg-white bg-opacity-30 blur-2xl"></div>
+              <div className="mt-12 pt-10 border-t border-slate-100/50">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">Social Systems</p>
+                <div className="flex gap-4">
+                  <a 
+                    href="https://www.linkedin.com/showcase/growclinic-io" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 rounded-2xl bg-white/50 flex items-center justify-center text-slate-500 hover:bg-primary hover:text-white transition-all duration-300 shadow-sm border border-white/20"
+                  >
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                  <a 
+                    href="https://www.instagram.com/growclinic.io" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 rounded-2xl bg-white/50 flex items-center justify-center text-slate-500 hover:bg-primary hover:text-white transition-all duration-300 shadow-sm border border-white/20"
+                  >
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                </div>
               </div>
             </div>
 
-            {/* Form Section */}
-            <div className="p-10 relative">
+            <div className="bg-primary-gradient p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
+              <div className="relative z-10">
+                <p className="text-primary-light font-black uppercase tracking-widest text-[10px] mb-4">Availability</p>
+                <h4 className="text-xl font-bold mb-2">24/7 Priority Support</h4>
+                <p className="text-white/80 text-sm leading-relaxed">
+                  Our team typically responds within 2 hours for urgent medical practice audits.
+                </p>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-white/20 transition-all"></div>
+            </div>
+          </div>
+
+          {/* Form Section */}
+          <div className="lg:col-span-8 relative">
+            <div className="glass-morphism p-8 md:p-12 rounded-[2.5rem] border border-white/40 shadow-2xl relative overflow-hidden">
               {status === "success" ? (
-                <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-8 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                    <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                <div className="absolute inset-0 bg-white/95 backdrop-blur-md z-20 flex flex-col items-center justify-center p-12 text-center animate-in fade-in duration-500">
+                  <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-8 animate-bounce">
+                    <CheckCircle2 className="w-12 h-12 text-green-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Sent!</h3>
-                  <p className="text-gray-600 mb-8">
-                    Thank you for contacting us. We have received your message and sent a confirmation to your email. We'll be in touch shortly!
+                  <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Transmission Received!</h3>
+                  <p className="text-xl text-slate-600 mb-10 max-w-md font-medium">
+                    Thank you for reaching out. Our engineering team has received your lead and will contact you shortly to schedule your growth audit.
                   </p>
-                  <Button variant="outline" onClick={() => setStatus("idle")}>
+                  <Button variant="outline" size="lg" onClick={() => setStatus("idle")} className="rounded-2xl border-slate-200">
                     Send Another Message
                   </Button>
                 </div>
               ) : null}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                
-                {status === "error" && (
-                  <div className="p-4 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-start gap-3">
-                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{errorMessage}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label htmlFor="name" className="text-sm font-black uppercase tracking-widest text-slate-500">Full Name</label>
                     <input
                       type="text"
                       id="name"
@@ -138,12 +196,12 @@ export default function ContactPage() {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                      placeholder="John Doe"
+                      className="w-full px-6 py-4 bg-white/50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold"
+                      placeholder="Dr. John Smith"
                     />
                   </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="text-sm font-black uppercase tracking-widest text-slate-500">Email Address</label>
                     <input
                       type="email"
                       id="email"
@@ -151,76 +209,110 @@ export default function ContactPage() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                      placeholder="john@example.com"
+                      className="w-full px-6 py-4 bg-white/50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold"
+                      placeholder="hi@example.com"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number (Optional)</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                      placeholder="+1 (555) 000-0000"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-sm font-black uppercase tracking-widest text-slate-500">Phone (Optional)</label>
+                    <div className="flex gap-2">
+                      <div className="relative w-[130px] flex-shrink-0">
+                        <select
+                          name="countryCode"
+                          value={formData.countryCode}
+                          onChange={handleChange}
+                          className="w-full px-3 py-4 bg-white/50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold text-sm appearance-none cursor-pointer"
+                        >
+                          {COUNTRY_CODES.map((cc) => (
+                            <option key={cc.code + cc.country} value={cc.code}>
+                              {cc.flag} {cc.code}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      </div>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="flex-1 px-6 py-4 bg-white/50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold"
+                        placeholder="00000 00000"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-1">Where did you find us? *</label>
+                  <div className="space-y-2">
+                    <label htmlFor="source" className="text-sm font-black uppercase tracking-widest text-slate-500">Discovery Channel</label>
                     <select
                       id="source"
                       name="source"
                       required
                       value={formData.source}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                      className="w-full px-6 py-4 bg-white/50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold appearance-none cursor-pointer"
                     >
-                      <option value="" disabled>Select an option</option>
+                      <option value="" disabled>Select discovery source</option>
                       <option value="Google">Google Search</option>
                       <option value="Social Media">Social Media</option>
-                      <option value="Referral">Friend or Colleague</option>
+                      <option value="Referral">Referral / Colleague</option>
                       <option value="Advertisement">Advertisement</option>
-                      <option value="Other">Other</option>
+                      <option value="Other">Other Channel</option>
                     </select>
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                <div className="space-y-2">
+                  <label htmlFor="message" className="text-sm font-black uppercase tracking-widest text-slate-500">Your Objectives</label>
                   <textarea
                     id="message"
                     name="message"
                     required
-                    rows={4}
+                    rows={5}
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-900 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none"
-                    placeholder="Tell us about your needs..."
+                    className="w-full px-6 py-4 bg-white/50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold resize-none"
+                    placeholder="Tell us about your practice goals..."
                   ></textarea>
                 </div>
 
-                <div className="pt-2">
+                {status === "error" && (
+                  <div className="p-5 bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center gap-4 animate-in slide-in-from-top-4 duration-300">
+                    <AlertCircle className="w-6 h-6 shrink-0" />
+                    <span className="font-bold">{errorMessage}</span>
+                  </div>
+                )}
+
+                <div className="pt-4">
                   <Button 
                     type="submit" 
                     variant="primary" 
                     size="lg" 
-                    className="w-full sm:w-auto"
+                    className="w-full md:w-auto min-w-[240px] rounded-2xl flex gap-2 group shadow-glow hover:shadow-glow-accent transition-all duration-500"
                     disabled={status === "loading"}
                   >
-                    {status === "loading" ? "Sending Message..." : "Send Message"}
+                    {status === "loading" ? (
+                      <span className="flex items-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Processing...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        Initiate Contact
+                        <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                      </span>
+                    )}
                   </Button>
                 </div>
               </form>
             </div>
           </div>
         </div>
-
       </main>
     </div>
   );
 }
+

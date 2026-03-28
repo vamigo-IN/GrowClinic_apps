@@ -100,7 +100,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredPosts.map((post) => (
             <article key={post.id} className="group relative bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
-              <Link href={`/blog/${post.slug}`} className="absolute inset-0 z-0"><span className="sr-only">Read {post.title}</span></Link>
+              <Link href={`/blog/${post.slug}`} className="absolute inset-0 z-[1]"><span className="sr-only">Read {post.title}</span></Link>
               
               <div className="block relative h-56 overflow-hidden pointer-events-none">
                 <Image
@@ -118,9 +118,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
               
               {/* Category Badge */}
               <div className="absolute top-4 left-4 z-10">
-                <span className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black uppercase tracking-widest shadow-sm pointer-events-none">
+                <Link href={`/blog/category/${encodeURIComponent((post.category || 'Insights').toLowerCase())}`} className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-primary hover:text-white transition-colors cursor-pointer relative z-20 pointer-events-auto">
                   {post.category || 'Insights'}
-                </span>
+                </Link>
               </div>
 
               <div className="p-8 relative">
@@ -153,7 +153,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                     </div>
                     {post.author?.name || "GrowClinic Expert"}
                   </div>
-                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 pointer-events-auto relative z-10 cursor-pointer">
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 pointer-events-auto relative z-20 cursor-pointer">
                     <ArrowRight className="w-5 h-5 pointer-events-none" />
                   </div>
                 </div>

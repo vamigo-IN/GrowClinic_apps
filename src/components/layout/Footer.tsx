@@ -85,9 +85,9 @@ export function Footer() {
                         </h4>
                         <ul className="space-y-6">
                             <li>
-                                <a 
-                                    href="https://maps.google.com/?q=GrowClinic+Noida" 
-                                    target="_blank" 
+                                <a
+                                    href="https://maps.google.com/?q=GrowClinic+Noida"
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-4 group cursor-pointer"
                                 >
@@ -98,8 +98,8 @@ export function Footer() {
                                 </a>
                             </li>
                             <li>
-                                <a 
-                                    href="tel:+919718304212" 
+                                <a
+                                    href="tel:+919718304212"
                                     className="flex items-center gap-4 group cursor-pointer"
                                 >
                                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-all group-hover:bg-primary group-hover:text-white">
@@ -109,8 +109,8 @@ export function Footer() {
                                 </a>
                             </li>
                             <li>
-                                <a 
-                                    href="mailto:hi@growclinic.io" 
+                                <a
+                                    href="mailto:hi@growclinic.io"
                                     className="flex items-center gap-4 group cursor-pointer"
                                 >
                                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-all group-hover:bg-primary group-hover:text-white">

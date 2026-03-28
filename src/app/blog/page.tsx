@@ -63,8 +63,8 @@ export default async function BlogPage() {
         {featuredPost && (
           <div className="mb-20">
             <div className="relative bg-white rounded-[3rem] border border-slate-100 overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-1 group block">
-              <Link href={`/blog/${featuredPost.slug}`} className="absolute inset-0 z-0"><span className="sr-only">Read {featuredPost.title}</span></Link>
-              <div className="grid md:grid-cols-2 gap-0">
+              <Link href={`/blog/${featuredPost.slug}`} className="absolute inset-0 z-[1]"><span className="sr-only">Read {featuredPost.title}</span></Link>
+              <div className="grid md:grid-cols-2 gap-0 relative z-0">
                 {/* Image Side */}
                 <div className="relative h-72 md:h-[500px] overflow-hidden">
                   <Image
@@ -85,7 +85,7 @@ export default async function BlogPage() {
                 {/* Content Side */}
                 <div className="p-10 md:p-14 flex flex-col justify-center relative">
                   <div className="flex items-center gap-3 mb-6 relative z-10">
-                    <Link href={`/blog/category/${encodeURIComponent((featuredPost.category || 'Insights').toLowerCase())}`} className="px-3 py-1.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10 hover:bg-primary hover:text-white transition-colors">
+                    <Link href={`/blog/category/${encodeURIComponent((featuredPost.category || 'Insights').toLowerCase())}`} className="px-3 py-1.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10 hover:bg-primary hover:text-white transition-colors relative z-10 pointer-events-auto">
                       {featuredPost.category || 'Insights'}
                     </Link>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none">
@@ -129,7 +129,7 @@ export default async function BlogPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {remainingPosts.map((post) => (
             <article key={post.id} className="group relative bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
-              <Link href={`/blog/${post.slug}`} className="absolute inset-0 z-0"><span className="sr-only">Read {post.title}</span></Link>
+              <Link href={`/blog/${post.slug}`} className="absolute inset-0 z-[1]"><span className="sr-only">Read {post.title}</span></Link>
               
               <div className="block relative h-56 overflow-hidden pointer-events-none">
                 <Image
@@ -147,7 +147,7 @@ export default async function BlogPage() {
               
               {/* Category Badge */}
               <div className="absolute top-4 left-4 z-10">
-                <Link href={`/blog/category/${encodeURIComponent((post.category || 'Insights').toLowerCase())}`} className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                <Link href={`/blog/category/${encodeURIComponent((post.category || 'Insights').toLowerCase())}`} className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-primary hover:text-white transition-colors cursor-pointer relative z-20 pointer-events-auto">
                   {post.category || 'Insights'}
                 </Link>
               </div>
@@ -182,7 +182,7 @@ export default async function BlogPage() {
                     </div>
                     {post.author?.name || "GrowClinic Expert"}
                   </div>
-                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 pointer-events-auto relative z-10 cursor-pointer">
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 pointer-events-auto relative z-20 cursor-pointer">
                     <ArrowRight className="w-5 h-5 pointer-events-none" />
                   </div>
                 </div>

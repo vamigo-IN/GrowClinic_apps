@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
+import { sendContactConfirmationWhatsApp } from "@/lib/whatsapp";
 
 export async function POST(req: Request) {
   try {
@@ -58,6 +59,13 @@ export async function POST(req: Request) {
       console.warn("SMTP credentials are not configured. Email was not sent.");
     }
 
+    // 3. Send WhatsApp Confirmation (fire-and-forget)
+    if (phone) {
+      sendContactConfirmationWhatsApp(phone, name).catch((err) =>
+        console.error("WhatsApp contact confirmation failed:", err)
+      );
+    }
+
     return NextResponse.json({ success: true, data: contactMessage }, { status: 201 });
   } catch (error: any) {
     console.error("Error processing contact form:", error);
@@ -67,3 +75,4 @@ export async function POST(req: Request) {
     );
   }
 }
+
