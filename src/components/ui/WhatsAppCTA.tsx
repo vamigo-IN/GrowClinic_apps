@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 export function WhatsAppCTA() {
     return (
         <a
-            href="https://wa.me/+919718304212"
+            href="https://wa.me/+15558812000"
             target="_blank"
             rel="noopener noreferrer"
             className="fixed bottom-8 right-8 z-50 group"

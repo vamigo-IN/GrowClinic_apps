@@ -1,57 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/Button";
-import { CheckCircle2, Calendar, Clock, User, Mail, Phone, Building, MessageSquare, Award, Sparkles, Star } from "lucide-react";
+import React, { useEffect } from "react";
+import { motion } from "framer-motion";
+import { Award, Sparkles, Star, CheckCircle2, Calendar } from "lucide-react";
+import Cal, { getCalApi } from "@calcom/embed-react";
 
 export function BookingSection() {
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        clinicName: "",
-        clinicType: "",
-        challenge: "",
-        preferredDate: "",
-        preferredTime: "",
-    });
-
-    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus("loading");
-
-        try {
-            const res = await fetch("/api/bookings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+    useEffect(() => {
+        (async function () {
+            const cal = await getCalApi({ "namespace": "30min" });
+            cal("ui", {
+                "cssVarsPerTheme": {
+                    "light": { "cal-brand": "#3586FF" },
+                    "dark": { "cal-brand": "#3586FF" }
+                },
+                "hideEventTypeDetails": true,
+                "layout": "month_view"
             });
-
-            if (!res.ok) throw new Error("Failed to submit booking");
-
-            setStatus("success");
-            setFormData({
-                name: "",
-                email: "",
-                phone: "",
-                clinicName: "",
-                clinicType: "",
-                challenge: "",
-                preferredDate: "",
-                preferredTime: "",
-            });
-        } catch (error) {
-            console.error("Booking error:", error);
-            setStatus("error");
-        }
-    };
+        })();
+    }, []);
 
     return (
         <section id="book" className="py-32 bg-slate-50 relative overflow-hidden">
@@ -84,7 +51,7 @@ export function BookingSection() {
                                 { title: "Competitor Intelligence", desc: "See exactly how other clinics in your area capture high-value patients." },
                                 { title: "System Leak Audit", desc: "We'll identify leaks in your current funnel and provide instant fixes." }
                             ].map((item, i) => (
-                                <motion.div 
+                                <motion.div
                                     key={i}
                                     initial={{ opacity: 0, x: -20 }}
                                     whileInView={{ opacity: 1, x: 0 }}
@@ -109,7 +76,7 @@ export function BookingSection() {
                                     <div className="flex -space-x-3 mb-3">
                                         {[1, 2, 3, 4].map(i => (
                                             <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-100 overflow-hidden">
-                                                <img src={`https://i.pravatar.cc/100?u=clinic-${i+10}`} alt="Trust" />
+                                                <img src={`https://i.pravatar.cc/100?u=clinic-${i + 10}`} alt="Trust" />
                                             </div>
                                         ))}
                                     </div>
@@ -132,181 +99,40 @@ export function BookingSection() {
                         </div>
                     </div>
 
-                    {/* Form Column */}
+                    {/* CTA Column */}
                     <div className="relative">
-                        <AnimatePresence mode="wait">
-                            {status === "success" ? (
-                                <motion.div 
-                                    key="success"
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    className="bg-white rounded-[3.5rem] p-12 text-center shadow-3xl border border-primary/20 min-h-[650px] flex flex-col items-center justify-center"
-                                >
-                                    <div className="w-24 h-24 rounded-[2.5rem] bg-primary-gradient flex items-center justify-center text-white mb-8 shadow-glow">
-                                        <CheckCircle2 className="w-12 h-12" />
-                                    </div>
-                                    <h2 className="text-3xl font-black text-slate-900 mb-4">Discovery Confirmed</h2>
-                                    <p className="text-slate-500 mb-12 text-lg font-medium leading-relaxed max-w-sm">
-                                        Our strategy leads are reviewing your practice. We'll be in touch shortly to finalize your custom roadmap.
-                                    </p>
-                                    <Button onClick={() => setStatus("idle")} variant="outline" className="px-10 py-5 rounded-3xl font-black uppercase text-xs tracking-widest">
-                                        Return Home
-                                    </Button>
-                                </motion.div>
-                            ) : (
-                                <motion.div 
-                                    key="form"
-                                    initial={{ opacity: 0, x: 30 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    viewport={{ once: true }}
-                                    className="bg-white rounded-[3.5rem] p-8 md:p-12 shadow-3xl border border-white relative overflow-hidden"
-                                >
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
-                                    
-                                    <div className="mb-10">
-                                        <h4 className="text-2xl font-black text-slate-900 tracking-tight">The Growth Audit</h4>
-                                        <p className="text-slate-400 font-medium">Please provide accurate practice details.</p>
-                                    </div>
-                                    
-                                    <form className="space-y-6 relative z-10" onSubmit={handleSubmit}>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="relative">
-                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    required
-                                                    value={formData.name}
-                                                    onChange={handleChange}
-                                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm"
-                                                    placeholder="Full Name"
-                                                />
-                                            </div>
-                                            <div className="relative">
-                                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    required
-                                                    value={formData.email}
-                                                    onChange={handleChange}
-                                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm"
-                                                    placeholder="Work Email"
-                                                />
-                                            </div>
-                                        </div>
+                        <motion.div
+                            key="cta"
+                            initial={{ opacity: 0, x: 30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className="bg-white rounded-[3.5rem] p-8 md:p-12 shadow-3xl border border-white relative overflow-hidden flex flex-col items-center justify-center text-center min-h-[550px] w-full"
+                        >
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="relative">
-                                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                <input
-                                                    type="tel"
-                                                    name="phone"
-                                                    required
-                                                    value={formData.phone}
-                                                    onChange={handleChange}
-                                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm"
-                                                    placeholder="Phone Number"
-                                                />
-                                            </div>
-                                            <div className="relative">
-                                                <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                <input
-                                                    type="text"
-                                                    name="clinicName"
-                                                    required
-                                                    value={formData.clinicName}
-                                                    onChange={handleChange}
-                                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm"
-                                                    placeholder="Clinic Name"
-                                                />
-                                            </div>
-                                        </div>
+                            <div className="w-24 h-24 rounded-[2.5rem] bg-primary/10 flex items-center justify-center text-primary mb-8 relative z-10">
+                                <Calendar className="w-10 h-10" />
+                            </div>
 
-                                        <div className="relative">
-                                            <select
-                                                name="clinicType"
-                                                required
-                                                value={formData.clinicType}
-                                                onChange={handleChange}
-                                                className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all font-black text-slate-900 text-xs appearance-none cursor-pointer uppercase tracking-widest"
-                                            >
-                                                <option value="" disabled>Select Practice Specialty...</option>
-                                                <option value="Dental Clinic">Dental Clinic</option>
-                                                <option value="Dermatology Clinic">Dermatology Clinic</option>
-                                                <option value="Cosmetology Clinic">Cosmetology / Aesthetic Clinic</option>
-                                                <option value="Hair Clinic">Hair / Trichology Clinic</option>
-                                                <option value="Multi-speciality">Multi-speciality Clinic</option>
-                                                <option value="Hospital">Hospital</option>
-                                                <option value="Other">Other</option>
-                                            </select>
-                                        </div>
+                            <h4 className="text-3xl font-black text-slate-900 tracking-tight mb-4 relative z-10">Start Growing Today</h4>
+                            <p className="text-slate-500 font-medium mb-10 max-w-sm relative z-10">
+                                Select a convenient time below to speak directly with our growth experts.
+                            </p>
 
-                                        <div className="relative">
-                                            <MessageSquare className="absolute left-4 top-5 w-4 h-4 text-slate-400" />
-                                            <textarea
-                                                name="challenge"
-                                                rows={3}
-                                                required
-                                                value={formData.challenge}
-                                                onChange={handleChange}
-                                                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm resize-none"
-                                                placeholder="Growth goal for the next 6 months?"
-                                            ></textarea>
-                                        </div>
+                            <button
+                                data-cal-namespace="30min"
+                                data-cal-link="growclinic-connect-evky36/30min"
+                                data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true","theme":"auto"}'
+                                className="w-full md:w-auto px-10 py-5 bg-primary text-white rounded-full font-black uppercase text-sm tracking-widest shadow-glow hover:-translate-y-1 transition-all duration-300 relative z-10"
+                            >
+                                Schedule Strategy Session
+                            </button>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Date</label>
-                                                <div className="relative">
-                                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                                    <input
-                                                        type="date"
-                                                        name="preferredDate"
-                                                        required
-                                                        min={new Date().toISOString().split('T')[0]}
-                                                        value={formData.preferredDate}
-                                                        onChange={handleChange}
-                                                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all font-medium text-slate-900 text-sm cursor-pointer"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Time</label>
-                                                <div className="relative">
-                                                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                                    <select
-                                                        name="preferredTime"
-                                                        required
-                                                        value={formData.preferredTime}
-                                                        onChange={handleChange}
-                                                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all font-black text-slate-900 text-xs appearance-none cursor-pointer uppercase tracking-widest"
-                                                    >
-                                                        <option value="" disabled>Select Time Slot</option>
-                                                        <option value="09:00 AM">09:00 AM</option>
-                                                        <option value="11:00 AM">11:00 AM</option>
-                                                        <option value="01:00 PM">01:00 PM</option>
-                                                        <option value="03:00 PM">03:00 PM</option>
-                                                        <option value="05:00 PM">05:00 PM</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <Button type="submit" className="w-full py-5 shadow-glow rounded-3xl font-black uppercase text-xs tracking-widest" disabled={status === "loading"}>
-                                                {status === "loading" ? "Processing..." : "Secure My Strategy Session"}
-                                            </Button>
-                                            <div className="flex justify-center items-center gap-2 mt-6">
-                                                <div className="w-3 h-3 text-green-500"><CheckCircle2 className="w-full h-full" /></div>
-                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Confidential & Secure Link</p>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                            <div className="flex justify-center items-center gap-2 mt-8 relative z-10">
+                                <div className="w-4 h-4 text-green-500"><CheckCircle2 className="w-full h-full" /></div>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Free 30-Minute Value Call</p>
+                            </div>
+                        </motion.div>
                     </div>
 
                 </div>

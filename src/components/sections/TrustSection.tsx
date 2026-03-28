@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { Activity, Target, Shield, Heart } from "lucide-react";
 
 const stats = [
-    { label: "Clinics Served", value: "100+", subtext: "Across India", icon: Activity },
-    { label: "Monthly Leads", value: "5000+", subtext: "High-intent patients", icon: Target },
-    { label: "Avg. ROI", value: "12X", subtext: "Industry Leading", icon: Shield },
-    { label: "Patient Growth", value: "150%", subtext: "Quarterly Avg.", icon: Heart },
+    { label: "Clinics Served", value: "50+", subtext: "Across India", icon: Activity },
+    { label: "Monthly Leads", value: "10000+", subtext: "High-intent patients", icon: Target },
+    { label: "Avg. ROI", value: "3.7X", subtext: "Industry Leading", icon: Shield },
+    { label: "Patient Growth", value: "142%", subtext: "Quarterly Avg.", icon: Heart },
 ];
 
 export function TrustSection() {
@@ -16,11 +16,11 @@ export function TrustSection() {
         <section className="py-32 bg-slate-50 relative overflow-hidden">
             {/* Background elements */}
             <div className="absolute inset-0 opacity-[0.03] bg-[url('/grid-pattern.svg')] pointer-events-none"></div>
-            
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {stats.map((stat, index) => (
-                        <motion.div 
+                        <motion.div
                             key={index}
                             initial={{ opacity: 0, scale: 0.95 }}
                             whileInView={{ opacity: 1, scale: 1 }}
@@ -42,9 +42,9 @@ export function TrustSection() {
                         </motion.div>
                     ))}
                 </div>
-                
+
                 {/* Authority Logos */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}

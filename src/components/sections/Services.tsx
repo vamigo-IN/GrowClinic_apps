@@ -66,7 +66,7 @@ export function Services() {
                                     </div>
                                     <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight group-hover:text-primary transition-colors">{service.title}</h3>
                                     <p className="text-slate-600 mb-8 font-medium leading-relaxed">{service.desc}</p>
-                                    
+
                                     <div className="pt-6 border-t border-slate-50 flex items-center justify-between group-hover:border-primary/10 transition-colors">
                                         <span className="text-sm font-bold text-slate-400 group-hover:text-primary transition-colors uppercase tracking-widest">Scalable Result</span>
                                         <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
@@ -79,14 +79,14 @@ export function Services() {
                     ))}
                 </div>
 
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, delay: 0.6 }}
                     className="mt-20 text-center"
                 >
-                    <Button variant="primary" className="text-xl px-12 py-5 shadow-glow rounded-[2rem]">
+                    <Button variant="primary" className="text-xl px-12 py-5 shadow-glow rounded-[2rem]" onClick={() => window.location.href = '/contact'}>
                         Consult Our Strategy Team
                     </Button>
                 </motion.div>

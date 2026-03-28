@@ -47,14 +47,14 @@ export default async function BlogPage() {
 
         {/* Category Filter Pills */}
         {categories.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-2 mb-16">
-            <span className="px-5 py-2.5 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest cursor-pointer shadow-md shadow-primary/20">
+          <div className="flex flex-wrap justify-center gap-2 mb-16 relative z-10">
+            <Link href="/blog" className="px-5 py-2.5 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest cursor-pointer shadow-md shadow-primary/20">
               All Articles
-            </span>
+            </Link>
             {categories.map((cat) => (
-              <span key={cat} className="px-5 py-2.5 rounded-full bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest cursor-pointer border border-slate-100 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all">
+              <Link key={cat} href={`/blog/category/${encodeURIComponent(cat.toLowerCase())}`} className="px-5 py-2.5 rounded-full bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest cursor-pointer border border-slate-100 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all">
                 {cat}
-              </span>
+              </Link>
             ))}
           </div>
         )}
@@ -62,75 +62,76 @@ export default async function BlogPage() {
         {/* Featured Post (Hero Card) */}
         {featuredPost && (
           <div className="mb-20">
-            <Link href={`/blog/${featuredPost.slug}`} className="group block">
-              <div className="relative bg-white rounded-[3rem] border border-slate-100 overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-1">
-                <div className="grid md:grid-cols-2 gap-0">
-                  {/* Image Side */}
-                  <div className="relative h-72 md:h-[500px] overflow-hidden">
-                    <Image
-                      src={featuredPost.featuredImage || "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&q=80"}
-                      alt={featuredPost.title}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/30 md:block hidden" />
-                    <div className="absolute top-6 left-6">
-                      <span className="px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[10px] font-black uppercase tracking-widest shadow-sm">
-                        Featured
-                      </span>
-                    </div>
+            <div className="relative bg-white rounded-[3rem] border border-slate-100 overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-1 group block">
+              <Link href={`/blog/${featuredPost.slug}`} className="absolute inset-0 z-0"><span className="sr-only">Read {featuredPost.title}</span></Link>
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Image Side */}
+                <div className="relative h-72 md:h-[500px] overflow-hidden">
+                  <Image
+                    src={featuredPost.featuredImage || "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&q=80"}
+                    alt={featuredPost.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105 pointer-events-none"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/30 md:block hidden pointer-events-none" />
+                  <div className="absolute top-6 left-6 z-10">
+                    <span className="px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[10px] font-black uppercase tracking-widest shadow-sm pointer-events-none">
+                      Featured
+                    </span>
+                  </div>
+                </div>
+
+                {/* Content Side */}
+                <div className="p-10 md:p-14 flex flex-col justify-center relative">
+                  <div className="flex items-center gap-3 mb-6 relative z-10">
+                    <Link href={`/blog/category/${encodeURIComponent((featuredPost.category || 'Insights').toLowerCase())}`} className="px-3 py-1.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10 hover:bg-primary hover:text-white transition-colors">
+                      {featuredPost.category || 'Insights'}
+                    </Link>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 pointer-events-none">
+                      <Clock className="w-3 h-3" />
+                      {Math.ceil(featuredPost.content.replace(/<[^>]*>?/gm, '').split(' ').length / 200)} min
+                    </span>
                   </div>
 
-                  {/* Content Side */}
-                  <div className="p-10 md:p-14 flex flex-col justify-center">
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="px-3 py-1.5 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/10">
-                        {featuredPost.category || 'Insights'}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                        <Clock className="w-3 h-3" />
-                        {Math.ceil(featuredPost.content.replace(/<[^>]*>?/gm, '').split(' ').length / 200)} min
-                      </span>
-                    </div>
+                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 leading-tight tracking-tight group-hover:text-primary transition-colors pointer-events-none">
+                    {featuredPost.title}
+                  </h2>
 
-                    <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 leading-tight tracking-tight group-hover:text-primary transition-colors">
-                      {featuredPost.title}
-                    </h2>
+                  <p className="text-slate-500 font-medium leading-relaxed mb-8 text-lg line-clamp-3 pointer-events-none">
+                    {featuredPost.excerpt || featuredPost.content.replace(/<[^>]*>?/gm, '').substring(0, 200) + "..."}
+                  </p>
 
-                    <p className="text-slate-500 font-medium leading-relaxed mb-8 text-lg line-clamp-3">
-                      {featuredPost.excerpt || featuredPost.content.replace(/<[^>]*>?/gm, '').substring(0, 200) + "..."}
-                    </p>
-
-                    <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary-dark flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                          {(featuredPost.author?.name || "GC")[0]}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900">{featuredPost.author?.name || "GrowClinic Expert"}</p>
-                          <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1" suppressHydrationWarning>
-                            <Calendar className="w-3 h-3" />
-                            {new Date(featuredPost.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </p>
-                        </div>
+                  <div className="flex items-center justify-between pt-6 border-t border-slate-100 pointer-events-none">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary-dark flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                        {(featuredPost.author?.name || "GC")[0]}
                       </div>
-                      <span className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
-                        <ArrowRight className="w-5 h-5" />
-                      </span>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{featuredPost.author?.name || "GrowClinic Expert"}</p>
+                        <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1" suppressHydrationWarning>
+                          <Calendar className="w-3 h-3" />
+                          {new Date(featuredPost.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
                     </div>
+                    <span className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm relative z-10">
+                      <ArrowRight className="w-5 h-5 pointer-events-none" />
+                    </span>
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           </div>
         )}
 
         {/* Article Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {remainingPosts.map((post) => (
-            <article key={post.id} className="group bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
-              <Link href={`/blog/${post.slug}`} className="block relative h-56 overflow-hidden">
+            <article key={post.id} className="group relative bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+              <Link href={`/blog/${post.slug}`} className="absolute inset-0 z-0"><span className="sr-only">Read {post.title}</span></Link>
+              
+              <div className="block relative h-56 overflow-hidden pointer-events-none">
                 <Image
                   src={post.featuredImage || "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&q=80"}
                   alt={post.title}
@@ -142,16 +143,17 @@ export default async function BlogPage() {
                     Read Article <ArrowRight className="w-4 h-4" />
                   </span>
                 </div>
-                {/* Category Badge */}
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black uppercase tracking-widest shadow-sm">
-                    {post.category || 'Insights'}
-                  </span>
-                </div>
-              </Link>
+              </div>
+              
+              {/* Category Badge */}
+              <div className="absolute top-4 left-4 z-10">
+                <Link href={`/blog/category/${encodeURIComponent((post.category || 'Insights').toLowerCase())}`} className="px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                  {post.category || 'Insights'}
+                </Link>
+              </div>
 
-              <div className="p-8">
-                <div className="flex items-center gap-3 mb-5">
+              <div className="p-8 relative">
+                <div className="flex items-center gap-3 mb-5 pointer-events-none">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                     <Calendar className="w-3 h-3" />
                     <span suppressHydrationWarning>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -163,26 +165,26 @@ export default async function BlogPage() {
                   </span>
                 </div>
 
-                <Link href={`/blog/${post.slug}`}>
+                <div className="pointer-events-none relative z-10">
                   <h2 className="text-xl font-black text-slate-900 mb-4 leading-tight tracking-tight group-hover:text-primary transition-colors line-clamp-2">
                     {post.title}
                   </h2>
-                </Link>
+                </div>
 
-                <p className="text-slate-500 font-medium leading-relaxed mb-6 line-clamp-3 text-sm">
+                <p className="text-slate-500 font-medium leading-relaxed mb-6 line-clamp-3 text-sm pointer-events-none">
                   {post.excerpt || post.content.replace(/<[^>]*>?/gm, '').substring(0, 150).replace(/[#*]/g, '') + "..."}
                 </p>
 
-                <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                <div className="flex items-center justify-between pt-6 border-t border-slate-50 pointer-events-none text-xs">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-primary/20 to-primary/10 flex items-center justify-center text-primary text-[10px] font-black">
                       {(post.author?.name || "GC")[0]}
                     </div>
                     {post.author?.name || "GrowClinic Expert"}
                   </div>
-                  <Link href={`/blog/${post.slug}`} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 pointer-events-auto relative z-10 cursor-pointer">
+                    <ArrowRight className="w-5 h-5 pointer-events-none" />
+                  </div>
                 </div>
               </div>
             </article>
@@ -190,7 +192,7 @@ export default async function BlogPage() {
         </div>
 
         {posts.length === 0 && (
-          <div className="text-center py-24 bg-gradient-to-br from-slate-50 to-white rounded-[3rem] border border-dashed border-slate-200">
+          <div className="text-center py-24 bg-gradient-to-br from-slate-50 to-white rounded-[3rem] border border-dashed border-slate-200 relative z-10">
             <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-6">
               <Sparkles className="w-8 h-8 text-slate-300" />
             </div>
