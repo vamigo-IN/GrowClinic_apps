@@ -1,0 +1,105 @@
+// GrowClinic Engine — multi-tenant CRM SaaS schema
+// Every tenant-owned row carries `clinicId`. Queries MUST be scoped by it.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// PostgreSQL (shared `growclinic` database, `engine` schema — selected via
+// `?schema=engine` in DATABASE_URL). Migrations live in prisma/migrations and
+// are applied by the platform `migrate` job, never at app start.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum ClinicStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum UserRole {
+  PLATFORM // GrowClinic super admin — sees all clinics
+  OWNER    // clinic owner — full access to their clinic
+  STAFF    // clinic staff — limited access to their clinic
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  BOOKED
+  WON
+  LOST
+}
+
+model Clinic {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  plan      Plan         @default(FREE)
+  status    ClinicStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  activationKeys ActivationKey[]
+  users          User[]
+  leads          Lead[]
+}
+
+model ActivationKey {
+  id             String   @id @default(cuid())
+  clinicId       String
+  clinic         Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  // Store a hash of the key; the plaintext is shown once at creation.
+  keyHash        String   @unique
+  // Human-readable prefix for support (e.g. "eld_live_9f3c…").
+  label          String
+  // CSV of domains permitted to post with this key (origin allow-list).
+  allowedOrigins String   @db.Text
+  revoked        Boolean  @default(false)
+  lastUsedAt     DateTime?
+  createdAt      DateTime @default(now())
+
+  @@index([clinicId])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  // PLATFORM users have clinicId = null (they see everything).
+  clinicId     String?
+  clinic       Clinic?  @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  // Stored lower-cased (see src/lib/password.ts normaliseEmail) — PostgreSQL
+  // comparisons are case-sensitive, unlike the old MySQL _ci collation.
+  email        String   @unique
+  // scrypt$N$r$p$salt$hash (src/lib/password.ts). Legacy unsalted SHA-256 hex
+  // values from the MySQL era still verify and are flagged for rehash.
+  passwordHash String   @db.Text
+  role         UserRole @default(OWNER)
+  createdAt    DateTime @default(now())
+
+  @@index([clinicId])
+}
+
+model Lead {
+  id         String     @id @default(cuid())
+  clinicId   String
+  clinic     Clinic     @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  name       String
+  phone      String?
+  email      String?
+  message    String?    @db.Text
+  treatment  String?
+  source     String?    // e.g. "webflow-landing", "wordpress-cf7"
+  status     LeadStatus @default(NEW)
+  meta       String?    @db.Text // JSON string: utm_source, campaign, referrer, etc.
+  origin     String?    // domain the lead came from
+  createdAt  DateTime   @default(now())
+
+  @@index([clinicId, createdAt])
+  @@index([clinicId, status])
+}

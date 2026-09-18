@@ -1,0 +1,29 @@
+import { exec } from "./server/config/db.js";
+
+async function run() {
+  try {
+    await exec(`
+      ALTER TABLE locations
+      ADD COLUMN secondaryCategories JSON NULL,
+      ADD COLUMN latitude DECIMAL(10, 8) NULL,
+      ADD COLUMN longitude DECIMAL(11, 8) NULL,
+      ADD COLUMN rating DECIMAL(3, 2) NULL,
+      ADD COLUMN reviewCount INT NULL,
+      ADD COLUMN priceLevel VARCHAR(20) NULL,
+      ADD COLUMN openingHours JSON NULL,
+      ADD COLUMN googleMapsUrl VARCHAR(512) NULL,
+      ADD COLUMN currentlyOpen TINYINT(1) NULL,
+      ADD COLUMN businessStatus VARCHAR(50) NULL;
+    `);
+    console.log("Success");
+  } catch (e) {
+    if (e.code === 'ER_DUP_FIELDNAME') {
+      console.log("Already added.");
+    } else {
+      console.error(e);
+    }
+  }
+  process.exit(0);
+}
+
+run();

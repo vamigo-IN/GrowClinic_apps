@@ -1,0 +1,391 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-light: #60a5fa;
+  --color-primary-dark: #2563eb;
+  --color-primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --color-accent: #ff4785;
+  --color-accent-hover: #e0366d;
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo), var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+  --radius-xl: 15px;
+  --radius-2xl: 15px;
+  --radius-3xl: 15px;
+}
+
+/* =====================================================================
+   TYPOGRAPHY — Finsweet Client-First "Precision" scale
+   Fonts: Archivo (display/headings), IBM Plex Sans (body/UI)
+   Colors are intentionally NOT set here — hierarchy is size + weight only.
+   ===================================================================== */
+
+html {
+  font-size: 16px; /* 1rem = 16px */
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- Heading style classes (Archivo) ---- */
+.heading-style-h1,
+.heading-style-h2,
+.heading-style-h3,
+.heading-style-h4,
+.heading-style-h5,
+.heading-style-h6 {
+  font-family: var(--font-display);
+}
+
+.heading-style-h1 {
+  font-size: 4.75rem;   /* 76px */
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+}
+
+.heading-style-h2 {
+  font-size: 3.25rem;   /* 52px */
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.heading-style-h3 {
+  font-size: 2.375rem;  /* 38px */
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.heading-style-h4 {
+  font-size: 1.75rem;   /* 28px */
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.heading-style-h5 {
+  font-size: 1.3125rem; /* 21px */
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+}
+
+.heading-style-h6 {
+  font-size: 1rem;      /* 16px */
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Base heading elements inherit the display font + sensible default scale,
+   so any un-classed heading still looks correct. */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ---- Body text size classes (IBM Plex Sans) ---- */
+.text-size-large   { font-size: 1.25rem;   line-height: 1.5;  }  /* 20px */
+.text-size-medium  { font-size: 1.125rem;  line-height: 1.55; }  /* 18px */
+.text-size-regular { font-size: 1rem;      line-height: 1.6;  }  /* 16px */
+.text-size-small   { font-size: 0.875rem;  line-height: 1.55; }  /* 14px */
+.text-size-tiny    { font-size: 0.75rem;   line-height: 1.5;  letter-spacing: 0.04em; } /* 12px */
+
+/* ---- Weight utilities ---- */
+.text-weight-light    { font-weight: 300; }
+.text-weight-normal   { font-weight: 400; }
+.text-weight-medium   { font-weight: 500; }
+.text-weight-semibold { font-weight: 600; }
+.text-weight-bold     { font-weight: 700; }
+.text-weight-xbold    { font-weight: 800; }
+
+/* Utility to opt any element into the display font */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Responsive: scale the big display headings down on tablet/mobile so the
+   fixed Precision sizes never overflow small screens. */
+@media (max-width: 991px) {
+  .heading-style-h1 { font-size: 3.5rem; }   /* ~56px */
+  .heading-style-h2 { font-size: 2.5rem; }   /* ~40px */
+  .heading-style-h3 { font-size: 2rem; }     /* ~32px */
+}
+
+@media (max-width: 767px) {
+  .heading-style-h1 { font-size: 2.75rem; line-height: 1.05; } /* ~44px */
+  .heading-style-h2 { font-size: 2.125rem; line-height: 1.1; } /* ~34px */
+  .heading-style-h3 { font-size: 1.75rem; }                    /* ~28px */
+  .heading-style-h4 { font-size: 1.5rem; }                     /* ~24px */
+}
+
+/* =====================================================================
+   Audit tool demo — looping, file-free chat→report animation (~6s loop)
+   ===================================================================== */
+@keyframes auditDemoUser {
+  0%, 6%    { opacity: 0; transform: translateY(10px); }
+  12%, 88%  { opacity: 1; transform: translateY(0); }
+  96%, 100% { opacity: 0; }
+}
+@keyframes auditDemoAnalyze {
+  0%, 18%   { opacity: 0; }
+  24%, 44%  { opacity: 1; }
+  52%, 100% { opacity: 0; }
+}
+@keyframes auditDemoReport {
+  0%, 50%   { opacity: 0; transform: translateY(14px) scale(0.98); }
+  60%, 90%  { opacity: 1; transform: translateY(0) scale(1); }
+  97%, 100% { opacity: 0; transform: translateY(14px) scale(0.98); }
+}
+@keyframes auditDot {
+  0%, 60%, 100% { opacity: 0.25; }
+  30%           { opacity: 1; }
+}
+.audit-demo-user    { animation: auditDemoUser 6s ease-in-out infinite; }
+.audit-demo-analyze { animation: auditDemoAnalyze 6s ease-in-out infinite; }
+.audit-demo-report  { animation: auditDemoReport 6s ease-in-out infinite; }
+.audit-demo-dot     { animation: auditDot 1.2s ease-in-out infinite; }
+.audit-demo-dot:nth-child(2) { animation-delay: 0.2s; }
+.audit-demo-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .audit-demo-user,
+  .audit-demo-analyze,
+  .audit-demo-report,
+  .audit-demo-dot { animation: none; }
+  .audit-demo-analyze { opacity: 0; }
+  .audit-demo-report  { opacity: 1; transform: none; }
+}
+
+.bg-primary-gradient {
+  background: var(--color-primary-gradient);
+}
+
+.bg-mesh-gradient {
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 55%),
+    radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.1) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, rgba(59, 130, 246, 0.05) 0px, transparent 40%),
+    radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(255, 71, 133, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 4s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+  will-change: transform;
+}
+
+/* Pause the scroll when hovering the whole strip (optional, feels intentional) */
+.marquee-track:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+@keyframes gradient-slide {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #2563eb, #60a5fa, #93c5fd, #60a5fa, #2563eb) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-style: normal !important;
+  padding-bottom: 0.05em; /* keep descenders (g, p, y) from clipping */
+  animation: gradient-slide 5s linear infinite;
+}
+
+.text-gradient-primary {
+  background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa, #3b82f6, #2563eb) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-style: normal !important;
+  padding-bottom: 0.05em;
+  animation: gradient-slide 5s linear infinite;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .text-gradient,
+  .text-gradient-primary {
+    animation: none;
+  }
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-morphism-dark {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =====================================================================
+   Hero CTAs — clean, premium, matching pair
+   ===================================================================== */
+.btn-green {
+  background: linear-gradient(110deg, #15803d, #22c55e, #4ade80, #22c55e, #15803d);
+  background-size: 220% auto;
+  color: #ffffff;
+  box-shadow: 0 6px 18px -6px rgba(34, 197, 94, 0.45);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  animation: btn-green-slide 6s linear infinite;
+}
+@keyframes btn-green-slide {
+  to { background-position: 220% center; }
+}
+.btn-green:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(34, 197, 94, 0.55);
+  filter: brightness(1.05);
+}
+.btn-green:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px -6px rgba(34, 197, 94, 0.4);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-green { animation: none; }
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+.btn-ghost:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 20px rgba(53, 134, 255, 0.3);
+}
+
+.shadow-glow-accent {
+  box-shadow: 0 0 20px rgba(255, 71, 133, 0.3);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* =====================================================================
+   Admin panel theme — one variable set, switchable light/dark.
+   `.admin` = dark (default); `.admin.light` overrides to light.
+   Components reference these via Tailwind arbitrary values, e.g.
+   bg-[var(--a-panel)] text-[var(--a-text)] border-[var(--a-border)].
+   ===================================================================== */
+.admin {
+  --a-bg: #0a0e16;
+  --a-sidebar: #0c111b;
+  --a-panel: #0e1320;
+  --a-panel-2: #111726;
+  --a-border: rgba(255, 255, 255, 0.07);
+  --a-hover: rgba(255, 255, 255, 0.04);
+  --a-text: #cbd5e1;
+  --a-bright: #f8fafc;
+  --a-muted: #64748b;
+  --a-faint: #475569;
+  --a-accent: #34d399;
+  --a-accent-bg: rgba(52, 211, 153, 0.12);
+}
+.admin.light {
+  --a-bg: #f5f7fb;
+  --a-sidebar: #ffffff;
+  --a-panel: #ffffff;
+  --a-panel-2: #f1f5f9;
+  --a-border: rgba(15, 23, 42, 0.10);
+  --a-hover: rgba(15, 23, 42, 0.04);
+  --a-text: #334155;
+  --a-bright: #0f172a;
+  --a-muted: #64748b;
+  --a-faint: #94a3b8;
+  --a-accent: #0f9d6b;
+  --a-accent-bg: rgba(5, 150, 105, 0.10);
+}
+
+/* =====================================================================
+   Global corner radius — cap large / arbitrary rounded utilities at 15px
+   site-wide. rounded-xl/2xl/3xl are handled by the --radius-* theme vars
+   above; the attribute selectors below catch every arbitrary rem radius
+   (rounded-[2rem], md:rounded-[2.5rem], etc.) regardless of prefix.
+   rounded-full, rounded-lg/md/sm are intentionally left untouched.
+   ===================================================================== */
+[class*="rounded-[1.25rem]"],
+[class*="rounded-[1.5rem]"],
+[class*="rounded-[1.75rem]"],
+[class*="rounded-[1.9rem]"],
+[class*="rounded-[2rem]"],
+[class*="rounded-[2.25rem]"],
+[class*="rounded-[2.5rem]"],
+[class*="rounded-[2.75rem]"],
+[class*="rounded-[3rem]"],
+[class*="rounded-[3.5rem]"],
+[class*="rounded-[4rem]"] {
+  border-radius: 15px !important;
+}
+
+/* ── Editor focus mode: hide the admin nav sidebar while writing a post ── */
+body.editor-focus .admin-nav {
+  display: none;
+}

@@ -1,0 +1,26 @@
+{
+  "name": "growclinic-audit-tool",
+  "version": "1.10.0",
+  "description": "GrowClinic AI Audit Assistant",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "nodemailer": "^6.9.16",
+    "openai": "^6.33.0",
+    "pg": "^8.23.0",
+    "redis": "^6.2.1"
+  }
+}

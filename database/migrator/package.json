@@ -1,0 +1,18 @@
+{
+  "name": "growclinic-platform-migrator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Single controlled migration job for the shared GrowClinic PostgreSQL database.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "migrate": "node migrate.mjs apply",
+    "status": "node migrate.mjs status"
+  },
+  "dependencies": {
+    "pg": "8.23.0",
+    "prisma": "6.3.1"
+  }
+}

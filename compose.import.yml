@@ -1,0 +1,71 @@
+# MySQL → PostgreSQL import (one-off). Never used by normal `docker compose up`.
+#
+#   # 1. target schema must exist
+#   docker compose up -d postgres && ./scripts/migrate.sh apply
+#   # 2. start the throwaway MySQL source (fixtures, or real dumps placed in
+#   #    database/import/dumps/<app>.dump.sql — restored COPIES, never live prod)
+#   docker compose -f docker-compose.yml -f compose.import.yml --profile import up -d import-mysql
+#   # 3. import, then validate
+#   docker compose -f docker-compose.yml -f compose.import.yml --profile import run --rm import import
+#   docker compose -f docker-compose.yml -f compose.import.yml --profile import run --rm import validate
+#   # 4. remove the source
+#   docker compose -f docker-compose.yml -f compose.import.yml --profile import rm -sf import-mysql
+#
+# The source MySQL has no published port and a volume-less datadir (discarded on removal).
+services:
+  import-mysql:
+    profiles: ["import"]
+    image: mysql:8.4
+    restart: "no"
+    networks:
+      - growclinic-network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${IMPORT_MYSQL_ROOT_PASSWORD:-import-root-local-only}
+      MYSQL_USER: importer
+      MYSQL_PASSWORD: ${IMPORT_MYSQL_PASSWORD:-import-local-only}
+      TZ: UTC
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--default-time-zone=+00:00"]
+    tmpfs:
+      - /var/lib/mysql
+    volumes:
+      - ./database/import/fixtures/mysql-init:/docker-entrypoint-initdb.d:ro
+      - ./database/import/fixtures/mysql:/import/fixtures:ro
+      - ./database/import/fixtures/mysql/growclinic.sql:/import/schema/growclinic.sql:ro
+      - ./database/import/fixtures/mysql/engine.sql:/import/schema/engine.sql:ro
+      - ./apps/audit/db/mysql-legacy/schema.sql:/import/schema/audit.sql:ro
+      - ./apps/gmb/db/mysql-legacy/schema.sql:/import/schema/gmb.sql:ro
+      - ./apps/gmb/db/mysql-legacy/alter_locations.sql:/import/schema/gmb-alter.sql:ro
+      - ./database/import/dumps:/import/dumps:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -uimporter -p\"$${MYSQL_PASSWORD}\" -e 'SELECT COUNT(*) FROM gc_engine.Lead' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  import:
+    profiles: ["import"]
+    build:
+      context: ./database/import
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+    image: growclinic-platform/import:local
+    restart: "no"
+    networks:
+      - growclinic-network
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-growclinic}
+      POSTGRES_SUPERUSER: ${POSTGRES_SUPERUSER:-gc_admin}
+      POSTGRES_SUPERUSER_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      IMPORT_SOURCE_GROWCLINIC_URL: mysql://importer:${IMPORT_MYSQL_PASSWORD:-import-local-only}@import-mysql:3306/gc_growclinic
+      IMPORT_SOURCE_AUDIT_URL: mysql://importer:${IMPORT_MYSQL_PASSWORD:-import-local-only}@import-mysql:3306/gc_audit
+      IMPORT_SOURCE_GMB_URL: mysql://importer:${IMPORT_MYSQL_PASSWORD:-import-local-only}@import-mysql:3306/gc_gmb
+      IMPORT_SOURCE_ENGINE_URL: mysql://importer:${IMPORT_MYSQL_PASSWORD:-import-local-only}@import-mysql:3306/gc_engine
+      IMPORT_AUDIT_SOURCE_TZ: ${IMPORT_AUDIT_SOURCE_TZ:-+00:00}
+      IMPORT_GMB_SOURCE_TZ: ${IMPORT_GMB_SOURCE_TZ:-+00:00}
+    depends_on:
+      import-mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy

@@ -1,0 +1,16 @@
+.env
+.env.*
+node_modules
+dist
+dist-ssr
+*.local
+*.log
+
+# Reference-only material
+_prototype_backup
+db/mysql-legacy
+docs
+
+.git
+Dockerfile
+.dockerignore

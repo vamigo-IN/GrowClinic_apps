@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// PostgreSQL (shared `growclinic` database, `growclinic` schema — selected via
+// `?schema=growclinic` in DATABASE_URL). Migrations live in prisma/migrations
+// and are applied by the platform `migrate` job, never at app start.
+//
+// Citext columns preserve the case-insensitive matching/uniqueness the MySQL
+// `_ci` collation provided (login email, slugs, tag names). The citext
+// extension is installed into this schema by database/migrations/core.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String?  @unique @db.Citext
+  password  String?
+  image     String?
+  role      String   @default("admin") // admin | manager | viewer
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  source    String?
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique @db.Citext
+  content       String   @db.Text // HTML content from TipTap editor
+  excerpt       String?
+  featuredImage String?
+  category      String?
+  published     Boolean  @default(false)
+  scheduledFor  DateTime? // if set & in future: auto-publishes when the time passes
+  publishedAt   DateTime? // when the post actually went live (drives blog date + ordering)
+  authorId      String
+  author        User     @relation(fields: [authorId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tags          Tag[]
+
+  // ── Per-post SEO / social controls (CMS editor kit) ──
+  metaDescription   String?  @db.Text // <meta name="description"> shown in Google
+  focusKeyword      String?
+  secondaryKeywords String?  @db.Text
+  canonicalUrl      String?  @db.Text
+  ogTitle           String?  @db.Text
+  ogDescription     String?  @db.Text
+  ogImage           String?  @db.Text
+  noIndex           Boolean  @default(false)
+}
+
+// Uploaded media (ImageKit-backed) — used by the editor's media library.
+model Media {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String   @db.Text
+  fileType  String
+  size      Int
+  createdAt DateTime @default(now())
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique @db.Citext
+  slug  String @unique @db.Citext
+  posts Post[]
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  source    String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model ConsultationBooking {
+  id            String   @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  clinicName    String
+  clinicType    String
+  challenge     String   @db.Text
+  preferredDate String?
+  preferredTime String?
+  createdAt     DateTime @default(now())
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique @db.Citext
+  detail      String   @db.Text
+  growth      String   // e.g. "From 20 to 150 patients"
+  logoUrl     String?  // Clinic Logo
+  doctorName  String
+  website     String?  // Optional website link
+  specialty   String?  // e.g. "Dental", "Dermatology"
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ClinicAudit {
+  id             String   @id @default(cuid())
+  fullName       String
+  clinicName     String
+  specialization String
+  city           String
+  phone          String
+  website        String?
+  pinCode        String   @default("")
+  status         String   @default("pending") // pending, completed, contact_made
+  
+  // Extended Audit Report Metrics
+  seoScore            Int?
+  competitorRank      Int?
+  estimatedLeads      Int?
+  localVisibilityScore Int?
+  websiteHealthScore   Int?
+  googleBusinessStatus String?
+
+  // Attribution (captured silently from the audit CTA)
+  clickId       String?
+  utmSource     String?
+  utmCampaign   String?
+  referrer      String?  @db.Text
+
+  // Webhook delivery status to the audit tool
+  webhookStatus String   @default("pending") // pending, success, failed
+  webhookCode   Int?
+  webhookError  String?  @db.Text
+  webhookAt     DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String?
+  company   String?
+  content   String   @db.Text
+  avatarUrl String?
+  rating    Int      @default(5)
+  featured  Boolean  @default(false)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id             String   @id @default("global")
+  headerScripts  String?  @db.Text
+  footerScripts  String?  @db.Text
+  // Structured tracking / analytics integrations
+  ga4Id          String?  // Google Analytics 4 Measurement ID, e.g. G-XXXXXXX
+  gtmId          String?  // Google Tag Manager container ID, e.g. GTM-XXXXXXX
+  metaPixelId    String?  // Meta (Facebook) Pixel ID, numeric
+  updatedAt      DateTime @updatedAt
+}
+
+model ClientLogo {
+  id        String   @id @default(cuid())
+  name      String                       // e.g. "Smile Dental"
+  logoUrl   String?  @db.Text            // uploaded via /api/uploads
+  website   String?                      // optional link
+  order     Int      @default(0)         // display order in marquee
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CaseStudy {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique @db.Citext
+  clientName  String
+  category    String?  // legacy single service (kept for back-compat; superseded by `services`)
+  services    String?  // comma-separated service keys — a client usually buys several
+  location    String?  // city / region — powers local SEO + "clinics in <city>" context
+  specialty   String?  // e.g. Dermatology, Dental — for AEO/topical relevance
+  challenge   String   @db.Text
+  solution    String   @db.Text
+  results     String   @db.Text
+  metrics     String?  @db.Text // headline stats, one per line as "Value | Label" (e.g. "2,356 | Conversations")
+  clientQuote       String? @db.Text // testimonial from the client — social proof
+  clientQuoteAuthor String?          // who said it, e.g. "Dr. Ankit Potdar, Founder"
+  imageUrl    String?  @db.Text
+  // ── SEO / AEO ──
+  metaDescription String? @db.Text // <meta name="description"> + AI answer summary
+  focusKeyword    String?          // primary target keyword
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  published   Boolean  @default(false)
+}

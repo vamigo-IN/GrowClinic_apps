@@ -1,0 +1,21 @@
+# Never send secrets, local builds or user content into the image.
+.env
+.env.*
+node_modules
+.next
+out
+coverage
+*.tsbuildinfo
+npm-debug.log*
+
+# Output of a `prisma` run against the old Hostinger MySQL — not part of the app.
+prisma_output.txt
+
+# Uploaded media lives in the growclinic_uploads volume, not the image.
+public/uploads
+
+.git
+.github
+.vscode
+Dockerfile
+.dockerignore

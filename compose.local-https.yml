@@ -1,0 +1,17 @@
+# OPTIONAL local HTTPS on 127.0.0.1:18443 using mkcert certificates.
+#
+#   mkcert -install
+#   mkcert -cert-file proxy/certs/local.pem -key-file proxy/certs/local-key.pem \
+#     growclinic.localhost audit.growclinic.localhost gmb.growclinic.localhost engine.growclinic.localhost
+#   ./scripts/check-ports.sh 18443
+#   docker compose -f docker-compose.yml -f compose.local-https.yml up -d
+#
+# Production TLS is terminated by the existing VPS Nginx, not by this stack.
+services:
+  reverse-proxy:
+    ports:
+      - "${PROXY_HTTP_BIND:-127.0.0.1:18080}:80"
+      - "${PROXY_HTTPS_BIND:-127.0.0.1:18443}:443"
+    volumes:
+      - ./proxy/optional/local-https.conf:/etc/nginx/optional.d/local-https.conf:ro
+      - ./proxy/certs:/etc/nginx/certs:ro

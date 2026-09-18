@@ -1,0 +1,19 @@
+# Secrets and runtime data never go into the image.
+.env
+.env.*
+settings.json
+leads.json
+reports
+*.sqlite
+*.sqlite-*
+*.log
+node_modules
+
+# Not needed at runtime
+_archive
+nixpacks.toml
+railway.json
+Procfile
+.git
+Dockerfile
+.dockerignore

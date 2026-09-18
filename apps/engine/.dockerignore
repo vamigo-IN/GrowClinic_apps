@@ -1,0 +1,15 @@
+.env
+.env.*
+node_modules
+.next
+out
+coverage
+*.tsbuildinfo
+npm-debug.log*
+
+# Superseded standalone VPS kit (own MySQL/Nginx/Certbot) — not part of the image
+deploy
+
+.git
+Dockerfile
+.dockerignore

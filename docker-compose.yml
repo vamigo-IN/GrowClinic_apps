@@ -1,0 +1,465 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# GrowClinic platform — one Compose project, separate containers per app.
+#
+#   reverse-proxy ─┬─ growclinic   (www.growclinic.io — apps/GrowClinic-main)
+#                  ├─ audit        (audit.growclinic.io)
+#                  ├─ gmb          (gmb.growclinic.io)
+#                  └─ engine       (engine.growclinic.io)
+#   postgres  (ONE database "growclinic": schemas core/growclinic/audit/gmb/engine)
+#   redis     (shared, ACL user per app)
+#   migrate   (one-shot: the only process that changes the database schema)
+#
+# Only the reverse proxy publishes a host port, bound to 127.0.0.1.
+# PostgreSQL/Redis host ports exist only in compose.dbtools.yml (opt-in).
+#
+# Secrets come from .env (never committed) — create it with
+#   scripts/generate-secrets.sh
+# See README.md, ARCHITECTURE.md, PORTS.md, DATABASE-MIGRATION.md.
+# ─────────────────────────────────────────────────────────────────────────────
+name: growclinic
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-app: &app
+  restart: unless-stopped
+  init: true
+  logging: *logging
+  networks:
+    - growclinic-network
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    logging: *logging
+    networks:
+      - growclinic-network
+    security_opt:
+      - no-new-privileges:true
+    shm_size: 256mb
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-growclinic}
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:-gc_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?POSTGRES_SUPERUSER_PASSWORD must be set in .env}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8 --auth-host=scram-sha-256"
+      TZ: UTC
+      PGTZ: UTC
+    # Sized for a shared VPS; the connection budget is documented in
+    # ARCHITECTURE.md (app pools 21 + migrate 2 + maintenance 5 + reserved 3).
+    command:
+      - postgres
+      - -c
+      - max_connections=${POSTGRES_MAX_CONNECTIONS:-60}
+      - -c
+      - superuser_reserved_connections=3
+      - -c
+      - shared_buffers=${POSTGRES_SHARED_BUFFERS:-256MB}
+      - -c
+      - effective_cache_size=${POSTGRES_EFFECTIVE_CACHE_SIZE:-768MB}
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - password_encryption=scram-sha-256
+      - -c
+      - idle_in_transaction_session_timeout=300000
+      - -c
+      - log_min_duration_statement=1000
+      - -c
+      - log_timezone=UTC
+      - -c
+      - timezone=UTC
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: ${POSTGRES_MEMORY_LIMIT:-1g}
+
+  # ── Redis (shared; one ACL user per app, key prefix enforced) ───────────────
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    logging: *logging
+    networks:
+      - growclinic-network
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      REDIS_AUDIT_PASSWORD: ${REDIS_AUDIT_PASSWORD:?REDIS_AUDIT_PASSWORD must be set in .env}
+      REDIS_GMB_PASSWORD: ${REDIS_GMB_PASSWORD:?REDIS_GMB_PASSWORD must be set in .env}
+    # The ACL file is rendered at start from env ($$ = expanded by the container
+    # shell, so passwords never appear in the Compose-rendered command line).
+    command:
+      - sh
+      - -c
+      - |
+        umask 077
+        {
+          echo 'user default on nopass -@all +ping'
+          echo "user audit on >$${REDIS_AUDIT_PASSWORD} ~audit:* resetchannels -@all +@connection +@read +@write +@keyspace +@string -@dangerous"
+          echo "user gmb on >$${REDIS_GMB_PASSWORD} ~gmb:* resetchannels -@all +@connection +@read +@write +@keyspace +@string -@dangerous"
+        } > /tmp/users.acl
+        exec redis-server /usr/local/etc/redis/redis.conf --aclfile /tmp/users.acl
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 192m
+
+  # ── One-shot migration job ───────────────────────────────────────────────────
+  # MIGRATE_MODE=apply (local default): bring the schema up to date.
+  # MIGRATE_MODE=check (recommended in production): fail — and keep the apps
+  # from starting — if migrations are pending; apply them explicitly after a
+  # backup with `docker compose run --rm -e MIGRATE_MODE=apply migrate`.
+  migrate:
+    build:
+      context: ./database/migrator
+      additional_contexts:
+        sql: ./database/migrations
+        privileges: ./database/privileges
+        growclinic_prisma: ./apps/GrowClinic-main/prisma
+        engine_prisma: ./apps/engine/prisma
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+    image: growclinic-platform/migrate:local
+    restart: "no"
+    logging: *logging
+    networks:
+      - growclinic-network
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      MIGRATE_MODE: ${MIGRATE_MODE:-apply}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-growclinic}
+      POSTGRES_SUPERUSER: ${POSTGRES_SUPERUSER:-gc_admin}
+      POSTGRES_SUPERUSER_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      GROWCLINIC_DB_PASSWORD: ${GROWCLINIC_DB_PASSWORD:?GROWCLINIC_DB_PASSWORD must be set in .env}
+      AUDIT_DB_PASSWORD: ${AUDIT_DB_PASSWORD:?AUDIT_DB_PASSWORD must be set in .env}
+      GMB_DB_PASSWORD: ${GMB_DB_PASSWORD:?GMB_DB_PASSWORD must be set in .env}
+      ENGINE_DB_PASSWORD: ${ENGINE_DB_PASSWORD:?ENGINE_DB_PASSWORD must be set in .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── www.growclinic.io (main website: apps/GrowClinic-main) ───────────────────
+  growclinic:
+    <<: *app
+    build:
+      context: ./apps/GrowClinic-main
+      target: runner
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+        NEXT_PUBLIC_APP_URL: ${GROWCLINIC_PUBLIC_URL:-https://www.growclinic.io}
+    image: growclinic-platform/growclinic:local
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=512
+      DATABASE_URL: postgresql://growclinic_app:${GROWCLINIC_DB_PASSWORD}@postgres:5432/${POSTGRES_DB:-growclinic}?schema=growclinic&connection_limit=5&pool_timeout=20
+      # NextAuth v5 behind the proxies: trust X-Forwarded-Host/Proto.
+      AUTH_SECRET: ${GROWCLINIC_AUTH_SECRET:?GROWCLINIC_AUTH_SECRET must be set in .env}
+      AUTH_TRUST_HOST: "true"
+      # Canonical public origin for NextAuth URLs (redirects, callbacks, cookie security).
+      AUTH_URL: ${GROWCLINIC_AUTH_URL:-http://growclinic.localhost:18080}
+      UPLOAD_DIR: /data/uploads
+      # Website → Audit tool over the private network (never via the public edge).
+      # AUDIT_WEBHOOK_SECRET is the same value as the audit service's INTAKE_SECRET,
+      # INBOUND_LEADS_KEY the same as its INBOUND_LEADS_KEY.
+      AUDIT_WEBHOOK_URL: http://audit:3000/api/intake
+      AUDIT_WEBHOOK_SECRET: ${AUDIT_INTAKE_SECRET:-}
+      AUDIT_TOOL_URL: http://audit:3000
+      INBOUND_LEADS_KEY: ${AUDIT_INBOUND_LEADS_KEY:-}
+      # Search-engine pings for published posts: keep "false" anywhere but production.
+      INDEXNOW_ENABLED: ${GROWCLINIC_INDEXNOW_ENABLED:-false}
+      GOOGLE_SITE_VERIFICATION: ${GROWCLINIC_GOOGLE_SITE_VERIFICATION:-}
+      BING_SITE_VERIFICATION: ${GROWCLINIC_BING_SITE_VERIFICATION:-}
+      IMAGEKIT_PRIVATE_KEY: ${GROWCLINIC_IMAGEKIT_PRIVATE_KEY:-}
+      IMAGEKIT_FOLDER: ${GROWCLINIC_IMAGEKIT_FOLDER:-}
+      CONTACT_SHEET_WEBHOOK_URL: ${GROWCLINIC_CONTACT_SHEET_WEBHOOK_URL:-}
+      CAL_WEBHOOK_SECRET: ${GROWCLINIC_CAL_WEBHOOK_SECRET:-}
+      SMTP_HOST: ${GROWCLINIC_SMTP_HOST:-}
+      SMTP_PORT: ${GROWCLINIC_SMTP_PORT:-465}
+      SMTP_USER: ${GROWCLINIC_SMTP_USER:-}
+      SMTP_PASS: ${GROWCLINIC_SMTP_PASS:-}
+      WHATSAPP_API_URL: ${GROWCLINIC_WHATSAPP_API_URL:-}
+      WHATSAPP_API_TOKEN: ${GROWCLINIC_WHATSAPP_API_TOKEN:-}
+    volumes:
+      - growclinic_uploads:/data/uploads
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+
+  # ── audit.growclinic.io ──────────────────────────────────────────────────────
+  audit:
+    <<: *app
+    build:
+      context: ./apps/audit
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+    image: growclinic-platform/audit:local
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=384
+      PORT: "3000"
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://audit_app:${AUDIT_DB_PASSWORD}@postgres:5432/${POSTGRES_DB:-growclinic}
+      DB_SCHEMA: audit
+      DB_POOL_MAX: "6"
+      REDIS_URL: redis://audit:${REDIS_AUDIT_PASSWORD}@redis:6379
+      DATA_DIR: /data
+      REPORTS_DIR: /data/reports
+      PUBLIC_ORIGIN: ${AUDIT_PUBLIC_ORIGIN:-http://audit.growclinic.localhost:18080}
+      PUBLIC_URL: ${AUDIT_PUBLIC_URL:-http://audit.growclinic.localhost:18080}
+      APP_BASE_PATH: ${AUDIT_APP_BASE_PATH:-}
+      INTAKE_SECRET: ${AUDIT_INTAKE_SECRET:-}
+      MAINTENANCE_ACCESS_CODE: ${AUDIT_MAINTENANCE_ACCESS_CODE:-}
+      ADMIN_INITIAL_PASSWORD: ${AUDIT_ADMIN_INITIAL_PASSWORD:-}
+      ADMIN_DISABLE_2FA: ${AUDIT_ADMIN_DISABLE_2FA:-}
+      EMPTY_SESSION_TTL_HOURS: ${AUDIT_EMPTY_SESSION_TTL_HOURS:-3}
+      OPENAI_API_KEY: ${AUDIT_OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${AUDIT_GEMINI_API_KEY:-}
+      GOOGLE_API_KEY: ${AUDIT_GOOGLE_API_KEY:-}
+      GETGABS_API_KEY: ${AUDIT_GETGABS_API_KEY:-}
+      GETGABS_SENDER: ${AUDIT_GETGABS_SENDER:-}
+      GETGABS_CAMPAIGN_ID: ${AUDIT_GETGABS_CAMPAIGN_ID:-}
+      GETGABS_OTP_TEMPLATE: ${AUDIT_GETGABS_OTP_TEMPLATE:-}
+      GETGABS_REPORT_TEMPLATE: ${AUDIT_GETGABS_REPORT_TEMPLATE:-}
+      GETGABS_LANG: ${AUDIT_GETGABS_LANG:-en_US}
+      SMTP_HOST: ${AUDIT_SMTP_HOST:-}
+      SMTP_PORT: ${AUDIT_SMTP_PORT:-465}
+      SMTP_SECURE: ${AUDIT_SMTP_SECURE:-true}
+      SMTP_USER: ${AUDIT_SMTP_USER:-}
+      SMTP_PASS: ${AUDIT_SMTP_PASS:-}
+      SMTP_FROM: ${AUDIT_SMTP_FROM:-}
+      NOTIFY_EMAIL: ${AUDIT_NOTIFY_EMAIL:-}
+      WEBHOOK_URL: ${AUDIT_WEBHOOK_URL:-}
+      CRM_EVENTS_WEBHOOK: ${AUDIT_CRM_EVENTS_WEBHOOK:-}
+      SHEETS_WEBHOOK_URL: ${AUDIT_SHEETS_WEBHOOK_URL:-}
+      INBOUND_LEADS_KEY: ${AUDIT_INBOUND_LEADS_KEY:-}
+      CRM_API_KEY: ${AUDIT_CRM_API_KEY:-}
+      GA4_ID: ${AUDIT_GA4_ID:-}
+      GTM_ID: ${AUDIT_GTM_ID:-}
+      META_PIXEL_ID: ${AUDIT_META_PIXEL_ID:-}
+      CLARITY_ID: ${AUDIT_CLARITY_ID:-}
+      GOOGLE_ADS_ID: ${AUDIT_GOOGLE_ADS_ID:-}
+      GOOGLE_ADS_LABEL: ${AUDIT_GOOGLE_ADS_LABEL:-}
+      GSC_VERIFICATION: ${AUDIT_GSC_VERIFICATION:-}
+      META_CAPI_TOKEN: ${AUDIT_META_CAPI_TOKEN:-}
+      WA_API_VERSION: ${AUDIT_WA_API_VERSION:-}
+      META_LEADS_TOKEN: ${AUDIT_META_LEADS_TOKEN:-}
+      META_PAGE_ID: ${AUDIT_META_PAGE_ID:-}
+      GA4_PROPERTY_ID: ${AUDIT_GA4_PROPERTY_ID:-}
+      GA4_SA_JSON: ${AUDIT_GA4_SA_JSON:-}
+      META_GRAPH_TOKEN: ${AUDIT_META_GRAPH_TOKEN:-}
+      META_AD_ACCOUNT_ID: ${AUDIT_META_AD_ACCOUNT_ID:-}
+      TELEGRAM_BOT_TOKEN: ${AUDIT_TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${AUDIT_TELEGRAM_CHAT_ID:-}
+      GCAL_CLIENT_ID: ${AUDIT_GCAL_CLIENT_ID:-}
+      GCAL_CLIENT_SECRET: ${AUDIT_GCAL_CLIENT_SECRET:-}
+      GCAL_CALENDAR_ID: ${AUDIT_GCAL_CALENDAR_ID:-}
+      DEFAULT_COUNTRY_CODE: ${AUDIT_DEFAULT_COUNTRY_CODE:-}
+      GETGABS_OTP_COPY_BUTTON: ${AUDIT_GETGABS_OTP_COPY_BUTTON:-}
+      GETGABS_OTP_BUTTON_INDEX: ${AUDIT_GETGABS_OTP_BUTTON_INDEX:-}
+      GETGABS_REPORT_BUTTON_INDEX: ${AUDIT_GETGABS_REPORT_BUTTON_INDEX:-}
+      USD_INR_RATE: ${AUDIT_USD_INR_RATE:-}
+      COST_FACTOR: ${AUDIT_COST_FACTOR:-}
+    volumes:
+      - audit_data:/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ── gmb.growclinic.io ────────────────────────────────────────────────────────
+  gmb:
+    <<: *app
+    build:
+      context: ./apps/gmb
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+    image: growclinic-platform/gmb:local
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=192
+      PORT: "3000"
+      DATABASE_URL: postgresql://gmb_app:${GMB_DB_PASSWORD}@postgres:5432/${POSTGRES_DB:-growclinic}
+      DB_SCHEMA: gmb
+      DB_POOL_MAX: "5"
+      REDIS_URL: redis://gmb:${REDIS_GMB_PASSWORD}@redis:6379
+      TOKEN_ENC_KEY: ${GMB_TOKEN_ENC_KEY:-}
+      JWT_SECRET: ${GMB_JWT_SECRET:-}
+      INBOUND_HANDOFF_KEY: ${GMB_INBOUND_HANDOFF_KEY:-}
+      GOOGLE_CLIENT_ID: ${GMB_GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GMB_GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GMB_GOOGLE_REDIRECT_URI:-http://gmb.growclinic.localhost:18080/api/google/callback}
+      GOOGLE_PLACES_API_KEY: ${GMB_GOOGLE_PLACES_API_KEY:-}
+      USE_MOCK_GOOGLE_API: ${GMB_USE_MOCK_GOOGLE_API:-}
+      WHATSAPP_API_URL: ${GMB_WHATSAPP_API_URL:-}
+      WHATSAPP_API_TOKEN: ${GMB_WHATSAPP_API_TOKEN:-}
+      OTP_TEST_MODE: ${GMB_OTP_TEST_MODE:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  # ── engine.growclinic.io ─────────────────────────────────────────────────────
+  engine:
+    <<: *app
+    build:
+      context: ./apps/engine
+      target: runner
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+    image: growclinic-platform/engine:local
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=384
+      DATABASE_URL: postgresql://engine_app:${ENGINE_DB_PASSWORD}@postgres:5432/${POSTGRES_DB:-growclinic}?schema=engine&connection_limit=5&pool_timeout=20
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ── Central reverse proxy ────────────────────────────────────────────────────
+  reverse-proxy:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    logging: *logging
+    networks:
+      - growclinic-network
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - NET_BIND_SERVICE
+      - DAC_OVERRIDE
+    ports:
+      # Host binding is loopback-only. Verify the port first (scripts/check-ports.sh).
+      - "${PROXY_HTTP_BIND:-127.0.0.1:18080}:80"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy/conf.d:/etc/nginx/conf.d:ro
+      - ./proxy/snippets:/etc/nginx/snippets:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+
+  # ── One-off tools (never started by `docker compose up`) ────────────────────
+  growclinic-seed:
+    profiles: ["tools"]
+    build:
+      context: ./apps/GrowClinic-main
+      target: tools
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+    image: growclinic-platform/growclinic-tools:local
+    restart: "no"
+    networks:
+      - growclinic-network
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      DATABASE_URL: postgresql://growclinic_app:${GROWCLINIC_DB_PASSWORD}@postgres:5432/${POSTGRES_DB:-growclinic}?schema=growclinic&connection_limit=1
+      DEFAULT_ADMIN: ${GROWCLINIC_SEED_ADMIN_EMAIL:-admin@growclinic.io}
+      DEFAULT_PASS: ${GROWCLINIC_SEED_ADMIN_PASSWORD:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  engine-seed:
+    profiles: ["tools"]
+    build:
+      context: ./apps/engine
+      target: tools
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+    image: growclinic-platform/engine-tools:local
+    restart: "no"
+    networks:
+      - growclinic-network
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      DATABASE_URL: postgresql://engine_app:${ENGINE_DB_PASSWORD}@postgres:5432/${POSTGRES_DB:-growclinic}?schema=engine&connection_limit=1
+      ADMIN_EMAIL: ${ENGINE_SEED_ADMIN_EMAIL:-admin@growclinic.io}
+      ADMIN_PASSWORD: ${ENGINE_SEED_ADMIN_PASSWORD:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+networks:
+  growclinic-network:
+    name: growclinic-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  growclinic_uploads:
+  audit_data:

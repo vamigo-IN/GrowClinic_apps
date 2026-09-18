@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local SQLite database
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Lead data (contains PII — chat transcripts + contact info)
+leads.json
+
+# Generated audit reports (contain lead data)
+reports/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+
+# FUSE mount artifacts (stale deleted-but-open inodes)
+.fuse_hidden*

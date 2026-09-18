@@ -1,0 +1,14 @@
+# OPTIONAL local-development override: publish PostgreSQL and Redis on the
+# loopback interface for GUI/CLI tools (psql, DBeaver, RedisInsight).
+#
+#   ./scripts/check-ports.sh 15432 16379          # verify first
+#   docker compose -f docker-compose.yml -f compose.dbtools.yml up -d
+#
+# Never use this file on the production VPS — PostgreSQL and Redis stay private.
+services:
+  postgres:
+    ports:
+      - "${POSTGRES_HOST_BIND:-127.0.0.1:15432}:5432"
+  redis:
+    ports:
+      - "${REDIS_HOST_BIND:-127.0.0.1:16379}:6379"

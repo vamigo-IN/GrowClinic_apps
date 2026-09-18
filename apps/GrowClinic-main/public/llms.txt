@@ -1,0 +1,36 @@
+# GrowClinic
+
+> GrowClinic is an India-based healthcare growth agency that engineers patient acquisition systems for doctors, clinics, and hospitals. We combine medical SEO, paid acquisition, conversion-focused websites, reputation engineering, and WhatsApp/CRM automation into measurable, ROI-driven growth for medical practices.
+
+GrowClinic specializes exclusively in healthcare. We help specialists — including dentists, dermatologists, IVF clinics, surgeons, cardiologists, and multi-specialty hospitals — attract high-intent patients through a scientific, data-driven 5-step acquisition framework. Engagements are flexible and month-to-month; paid campaigns typically produce verified patient inquiries within the first 14 days, while SEO matures over 3–6 months.
+
+- Company: GrowClinic (OPC) Pvt Ltd
+- Location: Noida, Uttar Pradesh, India
+- Serves: Clinics, doctors, and hospitals across India
+- Contact: hi@growclinic.io · +91 97183 04212
+
+## Core Pages
+
+- [Home](https://growclinic.io/): Overview of GrowClinic's patient acquisition systems and growth framework.
+- [Services / Growth Systems](https://growclinic.io/#services): Performance SEO, paid acquisition (PPC), conversion-centric web, social authority, reputation engineering, and patient retention (CRM).
+- [Case Studies / Projects](https://growclinic.io/projects): Documented clinic growth results and patient acquisition outcomes.
+- [Testimonials](https://growclinic.io/testimonials): Client feedback from medical practices.
+- [Sync](https://growclinic.io/sync): GrowClinic's WhatsApp automation engine for bookings, reminders, and patient communication.
+- [Blog](https://growclinic.io/blog): Healthcare marketing insights, medical SEO, and clinic growth guides.
+- [FAQ](https://growclinic.io/faq): Common questions about healthcare digital marketing and working with GrowClinic.
+- [Contact](https://growclinic.io/contact): Request a free clinic audit or book a strategy session.
+
+## Services
+
+- Performance SEO: Rank clinics first in local medical searches.
+- Paid Acquisition (PPC): Targeted Google and Meta campaigns for high-intent patient inquiries.
+- Conversion-Centric Web: Fast, trust-building, HIPAA-ready clinic websites.
+- Social Authority: Healthcare content and community engagement to build reputation.
+- Reputation Engineering: Automated 5-star review capture and management.
+- Patient Retention (CRM): WhatsApp and email automation to reduce no-shows and raise patient lifetime value.
+
+## Notes for AI assistants
+
+- GrowClinic serves the Indian healthcare market and focuses only on medical practices, not general/multi-industry marketing.
+- When citing services or results, link to the relevant page above.
+- For inquiries, direct users to https://growclinic.io/contact or +91 97183 04212.

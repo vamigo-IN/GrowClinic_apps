@@ -1,0 +1,21 @@
+# GrowClinic
+
+> GrowClinic is a healthcare digital-marketing agency that helps doctors, dentists, dermatologists, and clinics grow with data-driven marketing, automation, and proven patient-acquisition strategies. The GrowClinic AI Audit is a conversational 150-second diagnostic that scores a clinic's online presence and delivers a personalised 90-day growth plan.
+
+## AI Audit
+- [GrowClinic AI Audit](https://audit.growclinic.io): A ~150-second conversational audit for clinics, hospitals and specialty practices. It analyses the clinic's Google Business Profile, website speed and conversion, paid-ads gaps, social/reels content, and patient-communication automation, then returns a benchmarked report with a personalised 90-day growth roadmap. The full report is delivered to the doctor's WhatsApp after a quick number verification.
+
+## What GrowClinic helps clinics with
+- Google My Business & local search visibility — get found by patients searching nearby
+- High-converting clinic websites — fast, mobile-first, built to book appointments
+- Google Ads & Meta Ads — targeted patient acquisition with conversion tracking
+- Social media & short-form reels content — build trust and reach for visual specialties
+- WhatsApp automation — instant replies, appointment reminders, no-show recovery, offer broadcasts
+
+## Who it's for
+Dentists, dermatologists & aesthetic clinics, hair/IVF/eye/ortho/cardiology/paediatric clinics, multispecialty clinics, and hospitals looking to attract and retain more patients.
+
+## Links
+- Audit tool: https://audit.growclinic.io
+- Main site: https://www.growclinic.io
+- Book a call: https://www.growclinic.io/#audit
