@@ -38,6 +38,12 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# ── One-shot legacy migration (hardcoded production credentials) ────────────
+# scripts/one-shot/ holds the throwaway MySQL->PostgreSQL migration runner with
+# real credentials baked in. It must never be committed: delete it after the
+# migration with `./scripts/one-shot/legacy-migrate.sh destroy`.
+scripts/one-shot/
+
 # ── MySQL dumps for the one-off import (production PII) ─────────────────────
 database/import/dumps/*
 !database/import/dumps/README.md
