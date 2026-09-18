@@ -71,6 +71,7 @@ docker compose --profile tools run --rm engine-seed        # prints the first ac
 
 # 5. Optional end-to-end check (writes test rows to the LOCAL database)
 ./scripts/smoke-test.sh
+./scripts/smoke-clean.sh                   # remove the rows it wrote (--dry-run to preview)
 ```
 
 ### Local URLs

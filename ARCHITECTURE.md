@@ -355,7 +355,8 @@ curl -s http://audit.growclinic.localhost:18080/api/health
 curl -s http://gmb.growclinic.localhost:18080/api/health
 curl -s http://engine.growclinic.localhost:18080/api/health   # includes DB check
 ./scripts/migrate.sh status               # schema state
-./scripts/smoke-test.sh                   # 127 end-to-end checks (local only)
+./scripts/smoke-test.sh                   # 185 end-to-end checks (local only)
+./scripts/smoke-clean.sh                  # delete the rows the smoke test wrote
 docker stats --no-stream
 ```
 

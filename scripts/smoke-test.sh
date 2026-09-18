@@ -8,6 +8,10 @@
 # (`docker compose --profile tools run --rm growclinic-seed`).
 # Writes test rows (all tagged "smoke"/"QA") into the LOCAL database.
 # NEVER run against production.
+#
+# Re-running within 10 minutes: the GMB OTP routes are capped per IP at 10
+# requests / 10 min by an in-memory limiter, and one run spends 6. Reset it with
+# `docker compose restart gmb` before a second run, or the OTP checks fail.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 export MSYS_NO_PATHCONV=1   # Git Bash on Windows: don't rewrite /data/... container paths
@@ -75,9 +79,12 @@ check "no X-Powered-By leak" '! grep -qi "^x-powered-by" <<<"$hdrs"'
 check "IndexNow disabled outside production" '[[ "$(docker compose exec -T growclinic printenv INDEXNOW_ENABLED | tr -d "\r")" == false ]]'
 
 # Admin-managed tracking comes from the DB at render time (never baked in at build).
+# safeGtmId() only renders ids matching /^GTM-[A-Z0-9]{4,12}$/i, so keep the
+# per-run id inside that format (bare "GTM-SMOKE$RUN" is 15 chars and is dropped).
+gtm_id="GTM-SMK${RUN: -5}"
 prev_gtm="$(psql_admin "SELECT coalesce(\"gtmId\", '') FROM growclinic.\"SiteSettings\" WHERE id = 'global'")"
-psql_admin "INSERT INTO growclinic.\"SiteSettings\" (id, \"gtmId\", \"updatedAt\") VALUES ('global', 'GTM-SMOKE$RUN', now()) ON CONFLICT (id) DO UPDATE SET \"gtmId\" = excluded.\"gtmId\"" >/dev/null
-c=$(code "$GC/blog/category/smoke-$RUN"); check "layout renders GTM container id from SiteSettings" '[[ $c == 200 ]] && grep -q "GTM-SMOKE$RUN" "$TMP/body"'
+psql_admin "INSERT INTO growclinic.\"SiteSettings\" (id, \"gtmId\", \"updatedAt\") VALUES ('global', '$gtm_id', now()) ON CONFLICT (id) DO UPDATE SET \"gtmId\" = excluded.\"gtmId\"" >/dev/null
+c=$(code "$GC/blog/category/smoke-$RUN"); check "layout renders GTM container id from SiteSettings" '[[ $c == 200 ]] && grep -q "$gtm_id" "$TMP/body"'
 psql_admin "UPDATE growclinic.\"SiteSettings\" SET \"gtmId\" = 'GTM-X'');alert(1337)//' WHERE id = 'global'" >/dev/null
 c=$(code "$GC/blog/category/smoke-inj-$RUN"); check "malformed tracking id is never injected into inline scripts" '[[ $c == 200 ]] && ! grep -q "alert(1337)" "$TMP/body"'
 psql_admin "UPDATE growclinic.\"SiteSettings\" SET \"gtmId\" = nullif('$prev_gtm', '') WHERE id = 'global'" >/dev/null
@@ -313,7 +320,14 @@ check "audit → gmb handoff (HMAC) mints token" '[[ $c == 200 && -n "$htok" ]]'
 c=$(code "$GM/api/handoff/$htok"); check "handoff token redeemed from Redis" '[[ $c == 200 && "$(json "$TMP/body" "j.clinic")" == "Handoff $RUN" ]]'
 c=$(code "$GM/api/handoff/$htok"); check "handoff token single-use" '[[ $c == 404 ]]'
 c=$(code -X POST "$GM/api/handoff" -H "x-handoff-key: 00" -H 'Content-Type: application/json' -d "$body"); check "handoff bad signature → 403" '[[ $c == 403 ]]'
-c=$(code "$GM/api/audit/search?q=dental"); check "public audit without Places key → 503 (configured-off, no crash)" '[[ $c == 503 ]]'
+# Depends on local config: with GMB_GOOGLE_PLACES_API_KEY set the endpoint really
+# calls Google (200); with it empty the app must report configured-off, not crash.
+c=$(code "$GM/api/audit/search?q=dental")
+if [[ -n "$(envv GMB_GOOGLE_PLACES_API_KEY)" ]]; then
+  check "public audit with Places key → 200 results" '[[ $c == 200 ]] && [[ -n "$(json "$TMP/body" "j.results.length")" ]]' "$c"
+else
+  check "public audit without Places key → 503 (configured-off, no crash)" '[[ $c == 503 ]]' "$c"
+fi
 for i in 1 2 3 4; do curl -s -o "$TMP/null" -X POST "$GM/api/auth/otp/request" -H 'Content-Type: application/json' -d "{\"phone\":\"$phone\"}"; done
 c=$(code -X POST "$GM/api/auth/otp/request" -H 'Content-Type: application/json' -d "{\"phone\":\"$phone\"}")
 check "OTP per-phone hourly cap enforced (6th request → 429)" '[[ $c == 429 ]]' "$c"

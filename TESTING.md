@@ -1,4 +1,4 @@
-# Testing report — local validation (2026-09-17)
+# Testing report — local validation (2026-09-17, re-validated 2026-09-18)
 
 Environment: Windows 11 + Docker Desktop 29.6.2 (Compose v5.3.1), 16 CPUs /
 7.6 GB RAM for the Docker VM. Node 22.23.2, PostgreSQL 17.11, Redis 7.4,
@@ -62,7 +62,19 @@ prefs (upsert, matrix, recipients), purge/delete paths and FK cascades.
 
 ## 5. End-to-end — `scripts/smoke-test.sh` (through the proxy)
 
-**127/127 checks passed.** Highlights:
+**185/185 checks passed** (re-run 2026-09-18 after a full `docker compose
+--profile tools build`). Two harness bugs were fixed to get there, both in the
+test rather than the apps:
+
+- the GTM check wrote `GTM-SMOKE<epoch>` (15 chars), which `safeGtmId()`
+  correctly drops — only `/^GTM-[A-Z0-9]{4,12}$/i` is ever rendered into an
+  inline script, so the id is now generated inside that format;
+- the Places check asserted the configured-off 503 unconditionally; it now
+  asserts 200 when `GMB_GOOGLE_PLACES_API_KEY` is set and 503 when it is not.
+
+The suite is not safely re-runnable inside 10 minutes: GMB caps `/otp/request`
+at 10 per IP per 10 min (in-memory) and one run spends 6 — `docker compose
+restart gmb` resets it. Highlights:
 
 - **Platform:** proxy health; unknown Host refused; all services healthy;
   postgres/redis/apps unpublished; exactly one database with the five schemas.
@@ -94,7 +106,8 @@ prefs (upsert, matrix, recipients), purge/delete paths and FK cascades.
   members; 401 without session; **tenant isolation** (other org cannot read,
   read org, or modify); Google connect redirect with state; **forged OAuth state
   rejected**; audit→gmb HMAC handoff, redeemed from Redis, single-use, bad
-  signature 403; public audit without Places key → 503; per-phone OTP cap → 429.
+  signature 403; public audit search (200 with a Places key configured, 503
+  configured-off without one); per-phone OTP cap → 429.
 - **engine.growclinic.io:** homepage (noindex); `/api/health` DB up; embed.js
   CORS; preflight 204; ingest with valid key + allowed origin; leaked key from
   another origin 403; invalid key 401; missing contact 422; header-key ingest
@@ -135,7 +148,18 @@ edge-case rows; imported into a freshly migrated scratch database.
 | Container hardening | ✔ apps run as `node`, CapEff 0, no-new-privileges, log rotation 10 m × 5 |
 | Idle footprint | ≈ 245 MB RAM for the seven long-running containers |
 
-## 8. Not tested (and why)
+## 8. Cleaning up after a run
+
+`scripts/smoke-clean.sh` removes what the suites write to the local database
+(`--dry-run` reports without deleting). It matches only the fixtures — `Smoke …`,
+`Handoff Clinic …`, `Intake …`, `*@example.com`, engine `qa_*` tenants, GMB smoke
+orgs and OTP phones — and leaves seeded blog posts and the seeded admin alone.
+It carries the same loopback guard as the smoke test, so it cannot be pointed at
+production. The 2026-09-18 run cleared 799 rows across the four schemas; the 13
+orphaned upload files the upload checks leave in the `growclinic_uploads` volume
+are not covered and were removed separately.
+
+## 9. Not tested (and why)
 
 | Area | Reason / how to test |
 |---|---|
